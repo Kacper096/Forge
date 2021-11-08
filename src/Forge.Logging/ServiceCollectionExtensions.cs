@@ -1,4 +1,5 @@
 ﻿using Forge.Logging.Options;
+using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Hosting;
 using Serilog;
@@ -42,6 +43,12 @@ namespace Forge.Logging
                 SetLoggerConfiguration(loggingOptions, configuration, appOptions);
                 configure?.Invoke(context, configuration);
             });
+
+        public static IApplicationBuilder UseLoggingMiddleware(this IApplicationBuilder app)
+        {
+            app.UseMiddleware<LoggingMiddleware>();
+            return app;
+        }
 
         private static void SetLoggerConfiguration(LoggingOptions loggingOptions, LoggerConfiguration configuration,
             ApplicationOptions appOptions)
