@@ -38,7 +38,7 @@ namespace Forge.Logging
             messageBuilder.AppendLine($"HEADERS: {Environment.NewLine}{string.Join(Environment.NewLine, headers)}");
             messageBuilder.AppendLine($"QUERY: {query ?? "EMPTY"}");
             messageBuilder.AppendLine($"BODY: {(string.IsNullOrEmpty(readedBody) ? "EMPTY" : $"{Environment.NewLine}{readedBody}")}");
-            _logger.LogInformation(messageBuilder.ToString());
+            _logger.LogTrace(messageBuilder.ToString());
 
             await _next(context);
         }

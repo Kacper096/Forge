@@ -10,6 +10,7 @@ namespace Forge.Logging
 {
     public static class ServiceCollectionExtensions
     {
+        private const string OutputTemplate = "{Timestamp:yyyy:MM:dd HH:mm:ss} [{MachineName}//{ApplicationName}:{Version}//{SourceContext}] [{Level:u3}] {Message:lj}{NewLine}{Exception}";
         public static IHostBuilder UseLogging(this IHostBuilder hostBuilder,
             Action<HostBuilderContext, LoggerConfiguration> configure = null,
             string appSectionName = ApplicationOptions.DefaultSectionName,
@@ -68,7 +69,18 @@ namespace Forge.Logging
         {
             if (loggingOptions.Console?.Enabled ?? false)
             {
-                loggerConfiguration.WriteTo.Console();
+                loggerConfiguration.WriteTo.Console(outputTemplate: OutputTemplate);
+            }
+
+            if (loggingOptions.File?.Enabled ?? false)
+            {
+                var fileOptions = loggingOptions.File;
+                var path = string.IsNullOrWhiteSpace(fileOptions.Path) ? "logs/log.txt" : fileOptions.Path;
+                if (!Enum.TryParse(fileOptions.Interval, out RollingInterval interval))
+                {
+                    interval = RollingInterval.Day;
+                }
+                loggerConfiguration.WriteTo.File(path, rollingInterval: interval, outputTemplate: OutputTemplate);
             }
         }
 
