@@ -21,6 +21,11 @@ namespace Forge.Logging
 
         public async Task Invoke(HttpContext context)
         {
+            if (!_logger.IsEnabled(LogLevel.Trace))
+            {
+                await _next(context);
+                return;
+            }
             context.Request.EnableBuffering();
             var query = context.Request.QueryString.HasValue ? context.Request.QueryString.Value : null;
             var headers = context.Request.Headers.Select(x => $" {x.Key}: {x.Value}");
