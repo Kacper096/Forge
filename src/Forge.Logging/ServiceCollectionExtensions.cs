@@ -11,7 +11,7 @@ namespace Forge.Logging
     public static class ServiceCollectionExtensions
     {
         private const string OutputTemplate = "{Timestamp:yyyy:MM:dd HH:mm:ss} [{MachineName}//{ApplicationName}:{Version}//{SourceContext}] [{Level:u3}] {Message:lj}{NewLine}{Exception}";
-        public static IHostBuilder UseLogging(this IHostBuilder hostBuilder,
+        public static IHostBuilder AddLogging(this IHostBuilder hostBuilder,
             Action<HostBuilderContext, LoggerConfiguration> configure = null,
             string appSectionName = ApplicationOptions.DefaultSectionName,
             string loggerSectionName = LoggingOptions.DefaultSectionName) 
@@ -28,7 +28,7 @@ namespace Forge.Logging
                 configure?.Invoke(context, configuration);
             });
 
-        public static IWebHostBuilder UseLogging(this IWebHostBuilder webHostBuilder,
+        public static IWebHostBuilder AddLogging(this IWebHostBuilder webHostBuilder,
             Action<WebHostBuilderContext, LoggerConfiguration> configure = null,
             string appSectionName = ApplicationOptions.DefaultSectionName,
             string loggerSectionName = LoggingOptions.DefaultSectionName)
@@ -45,7 +45,7 @@ namespace Forge.Logging
                 configure?.Invoke(context, configuration);
             });
 
-        public static IApplicationBuilder UseLoggingMiddleware(this IApplicationBuilder app)
+        public static IApplicationBuilder UseLogging(this IApplicationBuilder app)
         {
             app.UseMiddleware<LoggingMiddleware>();
             return app;

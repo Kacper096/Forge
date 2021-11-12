@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace Forge.Logging
 {
-    internal class LoggingMiddleware
+    internal sealed class LoggingMiddleware
     {
         private readonly RequestDelegate _next;
         private readonly ILogger<LoggingMiddleware> _logger;
