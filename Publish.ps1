@@ -12,6 +12,7 @@ else {
 dotnet pack --no-build --no-restore .\src\Forge\Forge.csproj -o .\packages -c Release /p:Version="$($Version)" /p:OutputPath="..\..\$($ArtifactsFolder)\Forge"
 dotnet pack --no-build --no-restore .\src\Forge.Logging\Forge.Logging.csproj -o .\packages -c Release /p:Version="$($Version)" /p:OutputPath="..\..\$($ArtifactsFolder)\Forge.Logging"
 dotnet pack --no-build --no-restore .\src\Forge.MediatR.CQRS\Forge.MediatR.CQRS.csproj -o .\packages -c Release /p:Version="$($Version)" /p:OutputPath="..\..\$($ArtifactsFolder)\Forge.MediatR.CQRS"
+dotnet pack --no-build --no-restore .\src\Forge.MessageBroker.RabbitMQ\Forge.MessageBroker.RabbitMQ.csproj -o .\packages -c Release /p:Version="$($Version)" /p:OutputPath="..\..\$($ArtifactsFolder)\Forge.MessageBroker.RabbitMQ"
 dotnet pack --no-build --no-restore .\src\Forge.Api\Forge.Api.csproj -o .\packages -c Release /p:Version="$($Version)" /p:OutputPath="..\..\$($ArtifactsFolder)\Forge.Api"
 Write-Host "--> Packaging [COMPLETED] !" -ForegroundColor Green
 
