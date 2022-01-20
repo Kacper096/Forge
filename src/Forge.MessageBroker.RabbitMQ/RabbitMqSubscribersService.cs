@@ -1,5 +1,6 @@
 ﻿using Forge.Exceptions;
 using Forge.MessageBroker.RabbitMQ.Connections;
+using Forge.MessageBroker.RabbitMQ.Exchange;
 using Forge.MessageBroker.RabbitMQ.Routing;
 using Forge.MessageBroker.RabbitMQ.Routing.Subscribers;
 using Forge.MessageBroker.RabbitMQ.Serializers;
@@ -8,6 +9,7 @@ using Microsoft.Extensions.Logging;
 using Polly;
 using RabbitMQ.Client;
 using RabbitMQ.Client.Events;
+using System.Reflection;
 
 namespace Forge.MessageBroker.RabbitMQ
 {
@@ -21,21 +23,26 @@ namespace Forge.MessageBroker.RabbitMQ
         private readonly IRabbitMessageSerializer _serializer;
         private readonly ISubscriberMessageDestinations _messageDestinations;
         private readonly ILogger<RabbitMqSubscribersService> _logger;
+        private readonly IExchangeInitializer _exchangeInitializer;
+
         public RabbitMqSubscribersService(IServiceProvider serviceProvider,
                                           ISubscribeConnection subscribeConnection,
                                           IRabbitMessageSerializer serializer,
                                           ISubscriberMessageDestinations messageDestinations,
-                                          ILogger<RabbitMqSubscribersService> logger)
+                                          ILogger<RabbitMqSubscribersService> logger,
+                                          IExchangeInitializer exchangeInitializer)
         {
             _serviceProvider = serviceProvider;
             _subscribeConnection = subscribeConnection.Connection;
             _serializer = serializer;
             _messageDestinations = messageDestinations;
             _logger = logger;
+            _exchangeInitializer = exchangeInitializer;
         }
 
         protected override Task ExecuteAsync(CancellationToken stoppingToken)
         {
+            _exchangeInitializer.Initialize();
             return Task.Run(() =>
             {
                 foreach ((Type type, IMessageDestination messageDestination) in _messageDestinations.GetAllWithTypes())
@@ -48,7 +55,7 @@ namespace Forge.MessageBroker.RabbitMQ
         private void ListenForMessage(Type messageType, IMessageDestination messageDestination)
         {
             var channel = _subscribeConnection.CreateModel();
-            channel.QueueDeclare(messageDestination.Queue, autoDelete: false);
+            channel.QueueDeclare(messageDestination.Queue, autoDelete: false, exclusive: false);
             channel.QueueBind(messageDestination.Queue, messageDestination.Exchange, messageDestination.RoutingKey);
 
             var genericHandlerType = typeof(IHandle<>);
@@ -59,10 +66,11 @@ namespace Forge.MessageBroker.RabbitMQ
             {
                 try
                 {
-                    var handler = _serviceProvider.GetService(handlerType) as IHandle<IMessage>;
+                    var handler = _serviceProvider.GetService(handlerType);
+                    var handleMethod = RabbitHandlerUtil.BuildHandleMethod(handler);
                     var message = _serializer.Deserialize(args.Body.Span, messageType) as IMessage;
-
-                    await TryHandleAsync(channel, handler, message, args);
+                    
+                    await TryHandleAsync(channel, handleMethod, message, args);
                 }
                 catch (Exception ex)
                 {
@@ -75,7 +83,7 @@ namespace Forge.MessageBroker.RabbitMQ
             channel.BasicConsume(messageDestination.Queue, false, consumer);
         }
 
-        private async Task TryHandleAsync(IModel channel, IHandle<IMessage> handler, IMessage message,
+        private async Task TryHandleAsync(IModel channel, Action<IMessage> handle, IMessage message,
             BasicDeliverEventArgs args)
         {
             var currentRetry = 0;
@@ -85,7 +93,7 @@ namespace Forge.MessageBroker.RabbitMQ
             {
                 try
                 {
-                    handler.Handle(message);
+                    handle?.Invoke(message);
                     channel.BasicAck(args.DeliveryTag, false);
                     await Task.Yield();
                 }

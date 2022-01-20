@@ -26,7 +26,7 @@ namespace Forge.MessageBroker.RabbitMQ.Exchange
         {
             var type = _options.Type;
             var exchanges = _subscribeDestinations.GetAll()
-                .Where(m => string.Equals(m.Exchange, _options.Name, StringComparison.InvariantCultureIgnoreCase))
+                .Where(m => !string.Equals(m.Exchange, _options.Name, StringComparison.InvariantCultureIgnoreCase))
                 .GroupBy(m => m.Exchange)
                 .Select(g => g.First().Exchange)
                 .ToList();

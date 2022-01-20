@@ -21,6 +21,7 @@ namespace Forge.MessageBroker.RabbitMQ
                 UserName = _options.UserName,
                 Password = _options.Password,
                 VirtualHost = _options.VirtualHost,
+                DispatchConsumersAsync = true,
             };
 
             return factory.CreateConnection(hostnames: new List<string>()

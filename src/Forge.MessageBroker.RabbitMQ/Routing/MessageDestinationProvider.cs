@@ -16,7 +16,7 @@ namespace Forge.MessageBroker.RabbitMQ.Routing
             _arrangementBuilder = arrangementBuilder;
         }
 
-        IPublisherMessageDestinationProvider IPublisherMessageDestinationProvider.Add<TMessage>(string exchange = null, string routingKey = null)
+        IPublisherMessageDestinationProvider IPublisherMessageDestinationProvider.Add<TMessage>(string routingKey = null, string exchange = null)
         {
             var type = typeof(TMessage);
             _clientConfigurationMessages.Add(new MessageDestinationDefinedInConfiguration(type, routingKey, exchange, null));

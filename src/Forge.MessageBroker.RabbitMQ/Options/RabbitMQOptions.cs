@@ -10,6 +10,7 @@ namespace Forge.MessageBroker.RabbitMQ.Options
     {
         public const string DefaultSectionName = "rabbit";
 
+        public string ConnectionName { get; set; }
         public string HostName { get; set; }
         public int Port { get; set; }
         public string UserName { get; set; }

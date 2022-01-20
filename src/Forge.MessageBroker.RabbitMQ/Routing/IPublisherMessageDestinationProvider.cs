@@ -2,6 +2,6 @@
 {
     public interface IPublisherMessageDestinationProvider
     {
-        IPublisherMessageDestinationProvider Add<TMessage>(string exchange = null, string routingKey = null) where TMessage : IMessage;
+        IPublisherMessageDestinationProvider Add<TMessage>(string routingKey = null, string exchange = null) where TMessage : IMessage;
     }
 }

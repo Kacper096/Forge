@@ -65,13 +65,14 @@ namespace Forge.MessageBroker.RabbitMQ
         }
 
         private static void RegisterHandlers(IServiceCollection services) 
-            => Assembly.GetExecutingAssembly().GetTypes()
+            => AppDomain.CurrentDomain.GetAssemblies().ToList()
+               .ForEach(a => a.GetTypes()
                 .Where(t => t.GetInterfaces().Where(i => i.IsGenericType).Any(i => i.GetGenericTypeDefinition() == typeof(IHandle<>)) && !t.IsAbstract && !t.IsInterface)
                 .ToList()
                 .ForEach(implementedType =>
                 {
                     var baseType = implementedType.GetInterfaces().First(i => i.GetGenericTypeDefinition() == typeof(IHandle<>));
-                    services.AddScoped(baseType, implementedType);
-                });
+                    services.AddSingleton(baseType, implementedType);
+                }));
     }
 }
