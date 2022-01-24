@@ -1,6 +1,6 @@
 [![Actions Status](https://github.com/Kacper096/Forge/workflows/master/badge.svg)](https://github.com/Kacper096/Forge/actions)
 
-# Forge
+# Forge ⚒️
 It's a simple package to fatest creating a web api in .NET 6.0
 
 ### What's inside ?
