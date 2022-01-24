@@ -28,4 +28,4 @@ jobs:
         run: dotnet restore
 
       - name: Build Forge
-        run: dotnet build ./src/Forge -c Release -o ${{env.ARTIFACT_FOLDER}}/Forge
+        run: dotnet build ./src/Forge -c Release -o ${{secrets.ARTIFACT_FOLDER}}/Forge
