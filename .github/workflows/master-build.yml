@@ -1,0 +1,31 @@
+name: master
+
+on:
+  push:
+  pull_request:
+    branches:
+      - master
+      - 'releases/**'
+    paths-ignore:
+      - '**.md'
+
+jobs:
+  build:
+    runs-on: windows-2022
+    strategy:
+      matrix:
+        dotnet-version: ['6.0.x']
+    
+    steps:
+      - uses: actions/checkout@v2
+      - name: Setup .NET CORE SDK ${{matrix.dotnet-version}}
+        uses: actions/setup-dotnet@1.7.2
+        with:
+          dotnet-version: ${{matrix.dotnet-version}}
+          include-prerelease: true
+
+      - name: Install Dependencies
+        run: dotnet restore
+
+      - name: Build Forge
+        run: dotnet build ./src/Forge -c Release -o ${{env.ARTIFACT_FOLDER}}/Forge
