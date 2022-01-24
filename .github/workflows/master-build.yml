@@ -9,6 +9,10 @@ on:
     paths-ignore:
       - '**.md'
 
+env:
+  ARTIFACT_FOLDER: build-artifacts
+  VERSION: 1.0.1
+
 jobs:
   build:
     runs-on: windows-2022
@@ -21,11 +25,23 @@ jobs:
       - name: Setup .NET CORE SDK ${{matrix.dotnet-version}}
         uses: actions/setup-dotnet@v1.7.2
         with:
-          dotnet-version: ${{matrix.dotnet-version}}
+          dotnet-version: ${{ matrix.dotnet-version }}
           include-prerelease: true
 
       - name: Install Dependencies
         run: dotnet restore
 
       - name: Build Forge
-        run: dotnet build ./src/Forge -c Release -o ${{secrets.ARTIFACT_FOLDER}}/Forge
+        run: dotnet build ./src/Forge -c Release -o ${{ env.ARTIFACT_FOLDER }}/Forge /p:Version=${{ env.VERSION }}
+
+      - name: Build Forge Logging
+        run: dotnet build ./src/Forge.Logging -c Release -o ${{ env.ARTIFACT_FOLDER }}/Forge.Logging /p:Version=${{ env.VERSION }}
+      
+      - name: Build Forge MediatR CQRS
+        run: dotnet build ./src/Forge.MediatR.CQRS -c Release -o ${{ env.ARTIFACT_FOLDER }}/Forge.MediatR.CQRS /p:Version=${{ env.VERSION }}
+      
+      - name: Build Forge Message Broker RabbitMQ
+        run: dotnet build ./src/Forge.MessageBroker.RabbitMQ -c Release -o ${{ env.ARTIFACT_FOLDER }}/Forge.MessageBroker.RabbitMQ /p:Version=${{ env.VERSION }}
+
+      - name: Build Forge Api
+        run: dotnet build ./src/Forge.Api -c Release -o ${{ env.ARTIFACT_FOLDER }}/Forge.Api /p:Version=${{ env.VERSION }}
