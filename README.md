@@ -1,3 +1,5 @@
+[![master](https://github.com/Kacper096/Forge/actions/workflows/master-build.yml/badge.svg)](https://github.com/Kacper096/Forge/actions/workflows/master-build.yml)
+
 # Forge
 It's a simple package to fatest creating a web api in .NET 6.0
 
