@@ -24,13 +24,15 @@ namespace Forge.MessageBroker.RabbitMQ
         private readonly ISubscriberMessageDestinations _messageDestinations;
         private readonly ILogger<RabbitMqSubscribersService> _logger;
         private readonly IExchangeInitializer _exchangeInitializer;
+        private readonly IRabbitSubscriberDomainErrorHandler _domainErrorHandler;
 
         public RabbitMqSubscribersService(IServiceProvider serviceProvider,
                                           ISubscribeConnection subscribeConnection,
                                           IRabbitMessageSerializer serializer,
                                           ISubscriberMessageDestinations messageDestinations,
                                           ILogger<RabbitMqSubscribersService> logger,
-                                          IExchangeInitializer exchangeInitializer)
+                                          IExchangeInitializer exchangeInitializer,
+                                          IRabbitSubscriberDomainErrorHandler domainErrorHandler)
         {
             _serviceProvider = serviceProvider;
             _subscribeConnection = subscribeConnection.Connection;
@@ -38,6 +40,7 @@ namespace Forge.MessageBroker.RabbitMQ
             _messageDestinations = messageDestinations;
             _logger = logger;
             _exchangeInitializer = exchangeInitializer;
+            _domainErrorHandler = domainErrorHandler;
         }
 
         protected override Task ExecuteAsync(CancellationToken stoppingToken)
@@ -83,7 +86,7 @@ namespace Forge.MessageBroker.RabbitMQ
             channel.BasicConsume(messageDestination.Queue, false, consumer);
         }
 
-        private async Task TryHandleAsync(IModel channel, Action<IMessage> handle, IMessage message,
+        private async Task TryHandleAsync(IModel channel, Action<IMessage, Action<Exception>> handle, IMessage message,
             BasicDeliverEventArgs args)
         {
             var currentRetry = 0;
@@ -91,20 +94,14 @@ namespace Forge.MessageBroker.RabbitMQ
 
             await retry.ExecuteAsync(async () =>
             {
-                try
-                {
-                    handle?.Invoke(message);
-                    channel.BasicAck(args.DeliveryTag, false);
-                    await Task.Yield();
-                }
-                catch (Exception ex)
+                handle?.Invoke(message, async (ex) =>
                 {
                     _logger.LogError(ex, message: ex.Message);
                     currentRetry++;
 
                     if (ex.IsDomainOrAppException())
                     {
-                        //todo: add mechanism to return app or domain exception
+                        await _domainErrorHandler.HandleAsync(ex);
                         channel.BasicAck(args.DeliveryTag, false);
                         await Task.Yield();
                         return;
@@ -112,7 +109,9 @@ namespace Forge.MessageBroker.RabbitMQ
 
                     channel.BasicNack(args.DeliveryTag, false, false);
                     await Task.Yield();
-                }
+                });
+                channel.BasicAck(args.DeliveryTag, false);
+                await Task.Yield();
             });
         }
     }

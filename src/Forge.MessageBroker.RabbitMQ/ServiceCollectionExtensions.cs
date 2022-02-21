@@ -18,8 +18,9 @@ namespace Forge.MessageBroker.RabbitMQ
         private const string SuffixPublishConnection = "publish";
         private const string SuffixSubscribeConnection = "subscribe";
 
-        public static IServiceCollection AddRabbitMQ(this IServiceCollection services, IConfiguration configuration,
-            IExchangeOptionsInitializer exchangeOptions = null)
+        public static IServiceCollection AddRabbitMQ(this IServiceCollection services,
+                                                     IConfiguration configuration,
+                                                     IExchangeOptionsInitializer exchangeOptions = null)
         {
             exchangeOptions ??= new ExchangeOptionsInitializer(); ;
             var rabbitOptions = configuration.GetOptions<RabbitMQOptions>(RabbitMQOptions.DefaultSectionName);
@@ -42,12 +43,13 @@ namespace Forge.MessageBroker.RabbitMQ
             services.AddHostedService<RabbitMqSubscribersService>();
 
             RegisterHandlers(services);
+            RegisterDomainHandler(services);
             return services;
         }
 
         public static IApplicationBuilder UseRabbitMq(this IApplicationBuilder builder,
-            Action<IConsumerMessageDestinationProvider> subscriberMessageDestinations = null,
-            Action<IPublisherMessageDestinationProvider> clientMessageDestinations = null)
+                                                      Action<IConsumerMessageDestinationProvider> subscriberMessageDestinations = null,
+                                                      Action<IPublisherMessageDestinationProvider> clientMessageDestinations = null)
         {
             var serviceProvider = builder.ApplicationServices;
             var subscriberMessageDestinationsService = serviceProvider.GetRequiredService<ISubscriberMessageDestinations>();
@@ -74,5 +76,17 @@ namespace Forge.MessageBroker.RabbitMQ
                     var baseType = implementedType.GetInterfaces().First(i => i.GetGenericTypeDefinition() == typeof(IHandle<>));
                     services.AddSingleton(baseType, implementedType);
                 }));
+
+        private static void RegisterDomainHandler(IServiceCollection services)
+        {
+            var interfaceType = typeof(IRabbitSubscriberDomainErrorHandler);
+            var derivedType = AppDomain.CurrentDomain.GetAssemblies().SelectMany(a => a.GetTypes()).Where(t => t.GetInterfaces().Any(iType => iType == interfaceType) && !t.IsAbstract && !t.IsInterface).FirstOrDefault();
+            if (derivedType == null)
+            {
+                return;
+            }
+
+            services.AddSingleton(interfaceType, derivedType);
+        }
     }
 }
