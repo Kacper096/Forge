@@ -1,6 +1,7 @@
 ﻿using Forge.Exceptions;
 using Forge.MessageBroker.RabbitMQ.Connections;
 using Forge.MessageBroker.RabbitMQ.Exchange;
+using Forge.MessageBroker.RabbitMQ.Options;
 using Forge.MessageBroker.RabbitMQ.Routing;
 using Forge.MessageBroker.RabbitMQ.Routing.Subscribers;
 using Forge.MessageBroker.RabbitMQ.Serializers;
@@ -17,6 +18,8 @@ namespace Forge.MessageBroker.RabbitMQ
     {
         private const int Retries = 3;
         private const double RetryInterval = 10;
+        private const string DeadLetterExchange = "x-dead-letter-exchange";
+        private const string DeadLetterRouting = "x-dead-letter-routing-key";
 
         private readonly IServiceProvider _serviceProvider;
         private readonly IConnection _subscribeConnection;
@@ -25,6 +28,7 @@ namespace Forge.MessageBroker.RabbitMQ
         private readonly ILogger<RabbitMqSubscribersService> _logger;
         private readonly IExchangeInitializer _exchangeInitializer;
         private readonly IRabbitSubscriberDomainErrorHandler _domainErrorHandler;
+        private readonly IDeadLetterExchangeOptions _deadLetterOptions;
 
         public RabbitMqSubscribersService(IServiceProvider serviceProvider,
                                           ISubscribeConnection subscribeConnection,
@@ -32,7 +36,8 @@ namespace Forge.MessageBroker.RabbitMQ
                                           ISubscriberMessageDestinations messageDestinations,
                                           ILogger<RabbitMqSubscribersService> logger,
                                           IExchangeInitializer exchangeInitializer,
-                                          IRabbitSubscriberDomainErrorHandler domainErrorHandler)
+                                          IRabbitSubscriberDomainErrorHandler domainErrorHandler,
+                                          IDeadLetterExchangeOptions deadLetterOptions)
         {
             _serviceProvider = serviceProvider;
             _subscribeConnection = subscribeConnection.Connection;
@@ -41,6 +46,7 @@ namespace Forge.MessageBroker.RabbitMQ
             _logger = logger;
             _exchangeInitializer = exchangeInitializer;
             _domainErrorHandler = domainErrorHandler;
+            _deadLetterOptions = deadLetterOptions;
         }
 
         protected override Task ExecuteAsync(CancellationToken stoppingToken)
@@ -58,8 +64,11 @@ namespace Forge.MessageBroker.RabbitMQ
         private void ListenForMessage(Type messageType, IMessageDestination messageDestination)
         {
             var channel = _subscribeConnection.CreateModel();
-            channel.QueueDeclare(messageDestination.Queue, autoDelete: false, exclusive: false);
+            var queueArgs = GetQueueArguments(messageDestination);
+            channel.QueueDeclare(messageDestination.Queue, autoDelete: false, exclusive: false, arguments: queueArgs);
             channel.QueueBind(messageDestination.Queue, messageDestination.Exchange, messageDestination.RoutingKey);
+            _logger.LogInformation($"Queue [{messageDestination.Queue}] has been declared for an exchange [{messageDestination.Exchange}]");
+            DeclareDeadLetterQueue(channel, messageDestination, queueArgs);
 
             var genericHandlerType = typeof(IHandle<>);
             var handlerType = genericHandlerType.MakeGenericType(messageType);
@@ -107,12 +116,48 @@ namespace Forge.MessageBroker.RabbitMQ
                         return;
                     }
 
+                    var messageType = message.GetType().Name;
+                    var messageCont = message.ToString();
+                    var errorMessage = _deadLetterOptions.Enabled ? $"Message [{messageType}]: {messageCont} will be moved to dead letter" : $"Unhandled message [{messageType}]: {messageCont}";
+
+                    _logger.LogError(errorMessage);
                     channel.BasicNack(args.DeliveryTag, false, false);
                     await Task.Yield();
                 });
                 channel.BasicAck(args.DeliveryTag, false);
                 await Task.Yield();
             });
+        }
+
+        private IDictionary<string, object>? GetQueueArguments(IMessageDestination messageDestination)
+        {
+            return !_deadLetterOptions.Enabled
+                ? new Dictionary<string, object>()
+                : new Dictionary<string, object>()
+                    {
+                        { DeadLetterExchange, $"{_deadLetterOptions.PrefixName}{messageDestination.Exchange}" },
+                        { DeadLetterRouting, $"{_deadLetterOptions.PrefixName}{messageDestination.Queue}" }
+                    };
+        }
+
+        private void DeclareDeadLetterQueue(IModel channel, IMessageDestination messageDestination, IDictionary<string, object> queueArguments)
+        {
+            if (!_deadLetterOptions.Enabled)
+            {
+                return;
+            }
+
+            var queueName = queueArguments[DeadLetterRouting] as string;
+            var exchangeName = queueArguments[DeadLetterExchange] as string;
+            var deadLetterArgs = new Dictionary<string, object>()
+            {
+                { DeadLetterExchange, messageDestination.Exchange },
+                { DeadLetterRouting, messageDestination.Queue }
+            };
+
+            channel.QueueDeclare(queueName, autoDelete: false, exclusive: false, arguments: deadLetterArgs);
+            channel.QueueBind(queueName, exchangeName, queueName);
+            _logger.LogInformation($"Deadletter queue [{queueName}] has been declared for an exchange [{exchangeName}]");
         }
     }
 }

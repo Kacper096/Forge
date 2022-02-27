@@ -1,6 +1,7 @@
 ﻿using Forge.MessageBroker.RabbitMQ.Connections;
 using Forge.MessageBroker.RabbitMQ.Routing.Subscribers;
 using Microsoft.Extensions.Logging;
+using RabbitMQ.Client;
 
 namespace Forge.MessageBroker.RabbitMQ.Exchange
 {
@@ -34,12 +35,26 @@ namespace Forge.MessageBroker.RabbitMQ.Exchange
             using var channel = _publishConnection.Connection.CreateModel();
             channel.ExchangeDeclare(_options.Name, type, durable: true, autoDelete: false, arguments: null);
             LogExchange(_options.Name, type);
+            DeclareDeadLetterExchange(channel);
 
             exchanges.ForEach(name =>
             {
                 channel.ExchangeDeclare(name, type, durable: true, autoDelete: false, arguments: null);
                 LogExchange(name, type);
             });
+        }
+
+        private void DeclareDeadLetterExchange(IModel channel)
+        {
+            if (!_options.DeadLetterExchangeOptions.Enabled)
+            {
+                return;
+            }
+
+            var exchangeName = $"{_options.DeadLetterExchangeOptions.PrefixName}{_options.Name}";
+            var exchangeType = ExchangeType.Direct;
+            channel.ExchangeDeclare(exchangeName, exchangeType, durable: true, autoDelete: false, arguments: null);
+            LogExchange(exchangeName, exchangeType);
         }
 
         private void LogExchange(string name, string type) => _logger.LogInformation($"Exchange: {name} with type: {type} has been declared.");

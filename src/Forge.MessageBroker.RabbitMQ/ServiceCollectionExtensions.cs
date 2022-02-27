@@ -6,6 +6,7 @@ using Forge.MessageBroker.RabbitMQ.Routing;
 using Forge.MessageBroker.RabbitMQ.Routing.Client;
 using Forge.MessageBroker.RabbitMQ.Routing.Subscribers;
 using Forge.MessageBroker.RabbitMQ.Serializers;
+using Forge.Utils;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -22,10 +23,11 @@ namespace Forge.MessageBroker.RabbitMQ
                                                      IConfiguration configuration,
                                                      IExchangeOptionsInitializer exchangeOptions = null)
         {
-            exchangeOptions ??= new ExchangeOptionsInitializer(); ;
+            exchangeOptions = ExchangeOptionsInitializerFactory.CreateInstance(exchangeOptions);
             var rabbitOptions = configuration.GetOptions<RabbitMQOptions>(RabbitMQOptions.DefaultSectionName);
             services.AddSingleton<IRabbitMQOptions>(rabbitOptions);
-            services.AddSingleton<IExchangeOptionsInitializer>(exchangeOptions);
+            services.AddSingleton<IDeadLetterExchangeOptions, DeadLetterExchangeOptions>()
+                    .AddSingleton<IExchangeOptionsInitializer>(exchangeOptions);
             services.AddSingleton<IExchangeInitializer, ExchangeInitializer>()
                     .AddSingleton<IArrangementBuilder, ArrangementBuilder>()
                     .AddSingleton<IClientMessageDestinations, ClientMessageDestinations>()
@@ -66,21 +68,21 @@ namespace Forge.MessageBroker.RabbitMQ
             return builder;
         }
 
-        private static void RegisterHandlers(IServiceCollection services) 
-            => AppDomain.CurrentDomain.GetAssemblies().ToList()
-               .ForEach(a => a.GetTypes()
-                .Where(t => t.GetInterfaces().Where(i => i.IsGenericType).Any(i => i.GetGenericTypeDefinition() == typeof(IHandle<>)) && !t.IsAbstract && !t.IsInterface)
-                .ToList()
-                .ForEach(implementedType =>
-                {
-                    var baseType = implementedType.GetInterfaces().First(i => i.GetGenericTypeDefinition() == typeof(IHandle<>));
-                    services.AddSingleton(baseType, implementedType);
-                }));
+        private static void RegisterHandlers(IServiceCollection services)
+        {
+            var handleInterface = typeof(IHandle<>);
+            var genericTypes = AssemblyUtil.FindGenericDerivedTypesFromCurrentDomain(handleInterface).ToList();
+            genericTypes.ForEach(type =>
+            {
+                var baseType = type.GetInterfaces().First(i => i.GetGenericTypeDefinition() == handleInterface);
+                services.AddSingleton(baseType, type);
+            });
+        }
 
         private static void RegisterDomainErrorHandler(IServiceCollection services)
         {
             var interfaceType = typeof(IRabbitSubscriberDomainErrorHandler);
-            var derivedType = AppDomain.CurrentDomain.GetAssemblies().SelectMany(a => a.GetTypes()).Where(t => t.GetInterfaces().Any(iType => iType == interfaceType) && !t.IsAbstract && !t.IsInterface).FirstOrDefault();
+            var derivedType = AssemblyUtil.FindNonGenericDerivedTypeFromCurrentDomain(interfaceType);
             if (derivedType == null)
             {
                 return;
