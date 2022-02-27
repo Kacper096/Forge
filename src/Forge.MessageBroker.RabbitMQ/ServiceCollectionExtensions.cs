@@ -43,7 +43,7 @@ namespace Forge.MessageBroker.RabbitMQ
             services.AddHostedService<RabbitMqSubscribersService>();
 
             RegisterHandlers(services);
-            RegisterDomainHandler(services);
+            RegisterDomainErrorHandler(services);
             return services;
         }
 
@@ -77,7 +77,7 @@ namespace Forge.MessageBroker.RabbitMQ
                     services.AddSingleton(baseType, implementedType);
                 }));
 
-        private static void RegisterDomainHandler(IServiceCollection services)
+        private static void RegisterDomainErrorHandler(IServiceCollection services)
         {
             var interfaceType = typeof(IRabbitSubscriberDomainErrorHandler);
             var derivedType = AppDomain.CurrentDomain.GetAssemblies().SelectMany(a => a.GetTypes()).Where(t => t.GetInterfaces().Any(iType => iType == interfaceType) && !t.IsAbstract && !t.IsInterface).FirstOrDefault();
