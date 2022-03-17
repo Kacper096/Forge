@@ -2,7 +2,7 @@
 
 namespace Forge.Persistence.InfluxDb.Connections
 {
-    internal sealed class InfluxConnection : IInfluxConnection
+    public sealed class InfluxConnection : IInfluxConnection
     {
         public InfluxDBClient Connection { get; }
 
