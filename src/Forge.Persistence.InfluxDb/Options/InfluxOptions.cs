@@ -10,9 +10,8 @@ namespace Forge.Persistence.InfluxDb.Options
     {
         private const string _http = "http";
         private const string _https = "https";
-        private const string _sectionName = "InfluxConnection";
+        public const string SectionName = "InfluxConnection";
 
-        public string SectionName => _sectionName;
         public string Ip { get; set; }
         public int Port { get; set; }
         public bool IsHttps { get; set; }
