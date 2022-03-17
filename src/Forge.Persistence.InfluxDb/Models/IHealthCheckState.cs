@@ -2,6 +2,6 @@
 {
     public interface IHealthCheckState
     {
-        bool IsHealthy { get; internal set; }
+        bool IsHealthy { get; }
     }
 }

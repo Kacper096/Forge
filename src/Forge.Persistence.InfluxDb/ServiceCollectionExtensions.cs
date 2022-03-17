@@ -12,8 +12,10 @@ namespace Forge.Persistence.InfluxDb
         public static IServiceCollection AddInfluxDb(this IServiceCollection services, IConfiguration configuration)
         {
             var influxOptions = configuration.GetOptions<InfluxOptions>(InfluxOptions.SectionName);
+            var healthCheckState = new HealthCheckState();
             services.AddSingleton<IInfluxOptions>(influxOptions)
-                    .AddSingleton<IHealthCheckState, HealthCheckState>();
+                    .AddSingleton<IHealthCheckState>(healthCheckState)
+                    .AddSingleton<ISetHealthCheckState>(healthCheckState);
 
             var connectionFactory = new InfluxConnectionFactory(influxOptions);
             var connection = connectionFactory.Create();

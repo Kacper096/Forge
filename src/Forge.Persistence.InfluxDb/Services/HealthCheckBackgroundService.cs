@@ -11,12 +11,12 @@ namespace Forge.Persistence.InfluxDb.Services
     {
         private readonly IInfluxConnection _connection;
         private readonly ILogger<HealthCheckBackgroundService> _logger;
-        private readonly IHealthCheckState _healthCheckState;
+        private readonly ISetHealthCheckState _healthCheckState;
         private readonly System.Timers.Timer _timer = null!;
 
         public HealthCheckBackgroundService(IInfluxConnection influxConnection,
                                             ILogger<HealthCheckBackgroundService> logger,
-                                            IHealthCheckState healthCheckState)
+                                            ISetHealthCheckState healthCheckState)
         {
             _connection = influxConnection;
             _logger = logger;
@@ -65,7 +65,7 @@ namespace Forge.Persistence.InfluxDb.Services
                 {
                     _logger.LogError("Influx database is not responding");
                 }
-                _healthCheckState.IsHealthy = isHealthy;
+                _healthCheckState.SetIsHealthy(isHealthy);
             };
         }
     }
