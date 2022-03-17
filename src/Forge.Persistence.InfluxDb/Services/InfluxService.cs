@@ -13,8 +13,10 @@ namespace Forge.Persistence.InfluxDb.Services
         private readonly IHealthCheckState _healthCheckState;
         private readonly ILogger<InfluxService> _logger;
 
-        public InfluxService(IInfluxConnection connection, IInfluxOptions options, IHealthCheckState healthCheckState,
-            ILogger<InfluxService> logger)
+        public InfluxService(IInfluxConnection connection,
+                             IInfluxOptions options,
+                             IHealthCheckState healthCheckState,
+                             ILogger<InfluxService> logger)
         {
             _connection = connection;
             _options = options;

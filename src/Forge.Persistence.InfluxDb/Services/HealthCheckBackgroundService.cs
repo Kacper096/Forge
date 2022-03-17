@@ -14,7 +14,9 @@ namespace Forge.Persistence.InfluxDb.Services
         private readonly IHealthCheckState _healthCheckState;
         private readonly System.Timers.Timer _timer = null!;
 
-        public HealthCheckBackgroundService(IInfluxConnection influxConnection, ILogger<HealthCheckBackgroundService> logger, IHealthCheckState healthCheckState)
+        public HealthCheckBackgroundService(IInfluxConnection influxConnection,
+                                            ILogger<HealthCheckBackgroundService> logger,
+                                            IHealthCheckState healthCheckState)
         {
             _connection = influxConnection;
             _logger = logger;
