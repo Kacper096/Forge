@@ -11,12 +11,16 @@ namespace Forge.Persistence.InfluxDb.Builders
         private const string StopParameter = "#STOP";
         private const string SelectNameParameter = "#NAME";
         private const string FilterConditionParameter = "#CONDITION";
+        private const string PivotRowKeyParameter = "#ROWKEY";
+        private const string PivotColumnKeyParameter = "#COLUMNKEY";
+        private const string PivotValueColumnParameter = "#VALUECOLUMN";
 
         private const string FromTemplate = "from(bucket: \"" + BucketParameter + "\")";
         private const string FullRangeTemplate = " |> range(start: " + StartParameter + ", stop: " + StopParameter + ")";
         private const string StartRangeTemplate = " |> range(start: " + StartParameter + ")";
         private const string SelectTemplate = " |> yield(name: \"" + SelectNameParameter + "\")";
         private const string FilterTemplate = " |> filter(" + FilterConditionParameter + ")";
+        private const string PivotTemplate = " |> pivot(rowKey: [\"" + PivotRowKeyParameter + "\"], columnKey: [\"" + PivotColumnKeyParameter + "\"], valueColumn: \"" + PivotRowKeyParameter + "\")";
 
         private string _query;
         private readonly string _bucketName;
@@ -80,6 +84,15 @@ namespace Forge.Persistence.InfluxDb.Builders
                 filter.Invoke(baseFilter);
                 return FilterTemplate.Replace(FilterConditionParameter, filterBuilder.FilterContent.Invoke());
             };
+            _steps.Add(_latestStep);
+            return this;
+        }
+
+        internal QueryBuilder Pivot(string rowKey = "_time", string columnKey = "_field", string valueColumn = "_value")
+        {
+            _latestStep = _ => PivotTemplate.Replace(PivotRowKeyParameter, rowKey)
+                                            .Replace(PivotColumnKeyParameter, columnKey)
+                                            .Replace(PivotValueColumnParameter, valueColumn);
             _steps.Add(_latestStep);
             return this;
         }
