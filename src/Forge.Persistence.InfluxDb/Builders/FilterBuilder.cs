@@ -6,7 +6,7 @@ using System.Reflection;
 
 namespace Forge.Persistence.InfluxDb.Builders
 {
-    public sealed class FilterBuilder
+    public sealed class FilterBuilder : IInitFilter, IFilter
     {
         private const string EqualOperator = "==";
         private const string NotEqualOperator = "!=";
@@ -43,63 +43,59 @@ namespace Forge.Persistence.InfluxDb.Builders
             };
         }
 
-        public FilterBuilder Init(Expression<Func<FilterParameter, bool>> expression)
+        public IFilter Init(Expression<Func<FilterParameter, bool>> expression)
         {
             _parameters.Add(GetContentFromFilterParameter(null, expression));
-
             return this;
         }
 
-        public FilterBuilder Init<TMeasure>(Expression<Func<TMeasure, bool>> expression, bool disableMeasurementCondition = false)
+
+        public IFilter Init<TMeasure>(Expression<Func<TMeasure, bool>> expression, bool disableMeasurementCondition = true)
         {
-            _parameters.Add(GetContentFromMeasure<TMeasure>(null, expression));
             if (!disableMeasurementCondition)
             {
                 ApplyMeasurementCondition(typeof(TMeasure));
             }
+            _parameters.Add(GetContentFromMeasure(AndOperator, expression));
+
             return this;
         }
 
-        public FilterBuilder And(Expression<Func<FilterParameter, bool>> expression)
+        internal IFilter BaseInit<TMeasure>()
+            where TMeasure : class
+        {
+            ApplyMeasurementCondition(typeof(TMeasure));
+            return this;
+        }
+
+        public IFilter And(Expression<Func<FilterParameter, bool>> expression)
         {
             _parameters.Add(GetContentFromFilterParameter(AndOperator, expression));
-
             return this;
         }
 
-        public FilterBuilder And<TMeasure>(Expression<Func<TMeasure, bool>> expression, bool disableMeasurementCondition = false)
+        public IFilter And<TMeasure>(Expression<Func<TMeasure, bool>> expression)
         {
             _parameters.Add(GetContentFromMeasure<TMeasure>(AndOperator, expression));
-            if (!disableMeasurementCondition)
-            {
-                ApplyMeasurementCondition(typeof(TMeasure));
-            }
-
             return this;
         }
 
-        public FilterBuilder Or(Expression<Func<FilterParameter, bool>> expression)
+        public IFilter Or(Expression<Func<FilterParameter, bool>> expression)
         {
             _parameters.Add(GetContentFromFilterParameter(OrOperator, expression));
-
             return this;
         }
 
-        public FilterBuilder Or<TMeasure>(Expression<Func<TMeasure, bool>> expression, bool disableMeasurementCondition = false)
+        public IFilter Or<TMeasure>(Expression<Func<TMeasure, bool>> expression)
         {
             _parameters.Add(GetContentFromMeasure(OrOperator, expression));
-            if (!disableMeasurementCondition)
-            {
-                ApplyMeasurementCondition(typeof(TMeasure));
-            }
-
             return this;
         }
 
         private void ApplyMeasurementCondition(Type measureType)
         {
             var measurementName = measureType.GetCustomAttribute<Measurement>()?.Name;
-            _parameters.Add(GetContentFromFilterParameter(AndOperator, fp => fp.Measurement == measurementName));
+            _parameters.Add(GetContentFromFilterParameter(null, fp => fp.Measurement == measurementName));
         }
 
         private Func<string> GetContentFromFilterParameter(string @operator, Expression<Func<FilterParameter, bool>> expression)
