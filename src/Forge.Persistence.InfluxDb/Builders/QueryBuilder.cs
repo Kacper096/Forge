@@ -60,7 +60,7 @@ namespace Forge.Persistence.InfluxDb.Builders
             return this;
         }
 
-        public QueryBuilder Filter(Action<FilterBuilder> filter)
+        public QueryBuilder Filter(Action<IInitFilter> filter)
         {
             _latestStep = (filterBuilder) =>
             {
@@ -69,6 +69,18 @@ namespace Forge.Persistence.InfluxDb.Builders
             };
             _steps.Add(_latestStep);
 
+            return this;
+        }
+
+        public QueryBuilder Filter<TMeasurement>(Action<IFilter> filter) where TMeasurement : class
+        {
+            _latestStep = (filterBuilder) =>
+            {
+                var baseFilter = filterBuilder.BaseInit<TMeasurement>();
+                filter.Invoke(baseFilter);
+                return FilterTemplate.Replace(FilterConditionParameter, filterBuilder.FilterContent.Invoke());
+            };
+            _steps.Add(_latestStep);
             return this;
         }
 
