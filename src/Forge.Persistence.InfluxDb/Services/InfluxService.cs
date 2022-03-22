@@ -1,4 +1,5 @@
-﻿using Forge.Persistence.InfluxDb.Connections;
+﻿using Forge.Persistence.InfluxDb.Builders;
+using Forge.Persistence.InfluxDb.Connections;
 using Forge.Persistence.InfluxDb.Models;
 using Forge.Persistence.InfluxDb.Options;
 using InfluxDB.Client.Core;
@@ -37,6 +38,13 @@ namespace Forge.Persistence.InfluxDb.Services
             writeApi.WriteMeasurement(bucket, _options.Organization, data.Precision, data.Data);
             _logger.LogTrace("Measurement: {0} has been added to db.", data.Data);
             return true;
+        }
+
+        public async Task<List<T?>> GetAsync<T>(QueryBuilder queryBuilder)
+            where T : class
+        {
+            var query = queryBuilder.Build();
+            return await _connection.Connection.GetQueryApi().QueryAsync<T>(query, _options.Organization);
         }
 
         private static bool ValidateMeasurement(object measurement)
