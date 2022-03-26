@@ -3,7 +3,7 @@ using System.Text.Json.Serialization;
 
 namespace Forge.Persistence.Redis.Serializers
 {
-    internal sealed class RModelSerializer : IRModelSerializer
+    public sealed class RModelSerializer : IRModelSerializer
     {
         private readonly JsonSerializerOptions _options;
 
