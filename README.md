@@ -8,3 +8,4 @@ It's a simple package for quickly creating a web api in .NET 6.0
 * Prepared commands, events, queries and handlers which using MediatR.
 * Communication with Rabbit
 * Integration with InfluxDb
+* Integration with Redis
