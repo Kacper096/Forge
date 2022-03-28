@@ -12,7 +12,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\src\Forge\Forge.csproj" />
+    <ProjectReference Include="..\Forge\Forge.csproj" />
   </ItemGroup>
 
 </Project>
