@@ -15,6 +15,7 @@ dotnet build ".\src\Forge.Logging" -c Release -o "$($ArtifactsFolder)\Forge.Logg
 dotnet build ".\src\Forge.MediatR.CQRS" -c Release -o "$($ArtifactsFolder)\Forge.MediatR.CQRS"
 dotnet build ".\src\Forge.MessageBroker.RabbitMQ" -c Release -o "$($ArtifactsFolder)\Forge.MessageBroker.RabbitMQ"
 dotnet build ".\src\Forge.Persistence.InfluxDb" -c Release -o "$($ArtifactsFolder)\Forge.Persistence.InfluxDb"
+dotnet build ".\src\Forge.Persistence.Redis" -c Release -o "$($ArtifactsFolder)\Forge.Persistence.Redis"
 dotnet build ".\src\Forge.Api" -c Release -o "$($ArtifactsFolder)\Forge.Api"
 
 Write-Host "--> Building [COMPLETED] !" -ForegroundColor Green
