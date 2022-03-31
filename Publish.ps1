@@ -14,6 +14,7 @@ dotnet pack --no-build --no-restore .\src\Forge.Logging\Forge.Logging.csproj -o 
 dotnet pack --no-build --no-restore .\src\Forge.MediatR.CQRS\Forge.MediatR.CQRS.csproj -o .\packages -c Release /p:Version="$($Version)" /p:OutputPath="..\..\$($ArtifactsFolder)\Forge.MediatR.CQRS"
 dotnet pack --no-build --no-restore .\src\Forge.MessageBroker.RabbitMQ\Forge.MessageBroker.RabbitMQ.csproj -o .\packages -c Release /p:Version="$($Version)" /p:OutputPath="..\..\$($ArtifactsFolder)\Forge.MessageBroker.RabbitMQ"
 dotnet pack --no-build --no-restore .\src\Forge.Persistence.InfluxDb\Forge.Persistence.InfluxDb.csproj -o .\packages -c Release /p:Version="$($Version)" /p:OutputPath="..\..\$($ArtifactsFolder)\Forge.Persistence.InfluxDb"
+dotnet pack --no-build --no-restore .\src\Forge.Persistence.Redis\Forge.Persistence.Redis.csproj -o .\packages -c Release /p:Version="$($Version)" /p:OutputPath="..\..\$($ArtifactsFolder)\Forge.Persistence.Redis"
 dotnet pack --no-build --no-restore .\src\Forge.Api\Forge.Api.csproj -o .\packages -c Release /p:Version="$($Version)" /p:OutputPath="..\..\$($ArtifactsFolder)\Forge.Api"
 Write-Host "--> Packaging [COMPLETED] !" -ForegroundColor Green
 
