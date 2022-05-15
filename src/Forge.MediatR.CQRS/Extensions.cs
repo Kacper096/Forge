@@ -1,5 +1,4 @@
-﻿using Forge.MediatR.CQRS.Queries;
-using MediatR;
+﻿using MediatR;
 using Microsoft.Extensions.DependencyInjection;
 using System.Reflection;
 
@@ -7,11 +6,10 @@ namespace Forge.MediatR.CQRS
 {
     public static class Extensions
     {
-        public static IServiceCollection UseCQRS(this IServiceCollection services)
+        public static IServiceCollection UseCQRS(this IServiceCollection services, params Assembly[] assemblies)
         {
-            var appAssemblies = AppDomain.CurrentDomain.GetAssemblies().Where(a => a.FullName != Assembly.GetAssembly(typeof(IMediator)).FullName).ToArray();
-            var requestTypes = GetTypes(appAssemblies, typeof(IRequest<>));
-            var requestHandlerTypes = GetTypes(appAssemblies, typeof(IRequestHandler<,>));
+            var requestTypes = GetTypes(assemblies, typeof(IRequest<>));
+            var requestHandlerTypes = GetTypes(assemblies, typeof(IRequestHandler<,>));
 
             RegisterGenericTypes(services, typeof(IRequest<>), requestTypes);
             RegisterGenericTypes(services, typeof(IRequestHandler<,>), requestHandlerTypes);
