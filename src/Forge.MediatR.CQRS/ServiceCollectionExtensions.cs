@@ -4,7 +4,7 @@ using System.Reflection;
 
 namespace Forge.MediatR.CQRS
 {
-    public static class Extensions
+    public static class ServiceCollectionExtensions
     {
         public static IServiceCollection UseCQRS(this IServiceCollection services, params Assembly[] assemblies)
         {
