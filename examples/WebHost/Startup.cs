@@ -45,6 +45,8 @@ public static class Startup
         builder.UseRequestLocalization();
         //app.UseLoggingMiddleware();
         builder.UseAuthorization();
+
+        builder.UseEndpoints(endpoints => EndpointRouteBuilderBootstrapper.Bootstrap(endpoints));
         return builder;
     }
 }
