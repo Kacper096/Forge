@@ -1,0 +1,27 @@
+﻿<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <TargetFramework>net6.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Folder Include="Extensions\" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Swashbuckle.AspNetCore" Version="6.3.1" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\Forge.Api\Forge.Api.csproj" />
+    <ProjectReference Include="..\..\src\Forge.Logging\Forge.Logging.csproj" />
+    <ProjectReference Include="..\..\src\Forge.MediatR.CQRS\Forge.MediatR.CQRS.csproj" />
+    <ProjectReference Include="..\..\src\Forge.MessageBroker.RabbitMQ\Forge.MessageBroker.RabbitMQ.csproj" />
+    <ProjectReference Include="..\..\src\Forge.Persistence.InfluxDb\Forge.Persistence.InfluxDb.csproj" />
+    <ProjectReference Include="..\..\src\Forge.Persistence.Redis\Forge.Persistence.Redis.csproj" />
+    <ProjectReference Include="..\..\src\Forge\Forge.csproj" />
+  </ItemGroup>
+
+</Project>
