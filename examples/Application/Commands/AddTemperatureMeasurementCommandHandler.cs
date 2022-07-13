@@ -20,8 +20,8 @@ internal class AddTemperatureMeasurementCommandHandler : ICommandHandler<AddTemp
     {
         var temperature = new Temperature
         {
-            Cold = command.Cold,
-            Value = command.Value,
+            Cold = command.IsCold,
+            Value = command.Temperature,
         };
         var influxData = temperature.ToInfluxData(InfluxDB.Client.Api.Domain.WritePrecision.Ms);
         _influxService.Add(BucketNames.OwnBucket, influxData);

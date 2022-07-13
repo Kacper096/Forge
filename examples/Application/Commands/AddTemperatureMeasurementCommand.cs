@@ -2,4 +2,4 @@
 
 namespace Forge.Application.Commands;
 
-public record AddTemperatureMeasurementCommand(bool Cold, decimal Value) : ICommand;
+public record AddTemperatureMeasurementCommand(bool IsCold, decimal Temperature) : ICommand;

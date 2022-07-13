@@ -6,6 +6,7 @@ public static class EndpointRouteBuilderBootstrapper
 {
     public static void Bootstrap(IEndpointRouteBuilder endpoints)
     {
-        endpoints.Post<AddTemperatureMeasurementCommand>("/temperature");
+        endpoints.Post<AddTemperatureMeasurementCommand>("/temperature")
+                 .Post<AddTemperatureToCacheCommand>("/temperature-cache");
     }
 }
