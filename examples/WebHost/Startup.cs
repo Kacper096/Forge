@@ -22,7 +22,7 @@ public static class Startup
 
     private static IServiceCollection RegisterServices(this IServiceCollection services, IConfiguration configuration)
     {
-        services.UseCQRS();
+        services.AddCQRS(Assemblies.Application);
         services.AddErrorHandler();
         services.AddInfluxDb(configuration);
         services.AddRedis(configuration);
@@ -30,7 +30,7 @@ public static class Startup
         services.AddControllers();
         services.AddEndpointsApiExplorer();
         services.AddSwaggerGen();
-        services.AddRabbitMQ(configuration);
+       //services.AddRabbitMQ(configuration);
         return services;
     }
 
@@ -41,9 +41,10 @@ public static class Startup
             builder.UseSwagger();
             builder.UseSwaggerUI();
         }
-
-        builder.UseRabbitMq(MessageBrokerBootstrapper.ConfigureSubscribeMessages, MessageBrokerBootstrapper.ConfigurePublishMessages);
+        builder.UseCors();
+        builder.UseRouting();
         builder.UseErrorHandler();
+      //  builder.UseRabbitMq(MessageBrokerBootstrapper.ConfigureSubscribeMessages, MessageBrokerBootstrapper.ConfigurePublishMessages);
         builder.UseRequestLocalization();
         builder.UseLogging();
         builder.UseAuthorization();
