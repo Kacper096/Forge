@@ -27,7 +27,6 @@ namespace Forge.MessageBroker.RabbitMQ
         private readonly ISubscriberMessageDestinations _messageDestinations;
         private readonly ILogger<RabbitMqSubscribersService> _logger;
         private readonly IExchangeInitializer _exchangeInitializer;
-        private readonly IRabbitSubscriberDomainErrorHandler _domainErrorHandler;
         private readonly IDeadLetterExchangeOptions _deadLetterOptions;
 
         public RabbitMqSubscribersService(IServiceProvider serviceProvider,
@@ -36,7 +35,6 @@ namespace Forge.MessageBroker.RabbitMQ
                                           ISubscriberMessageDestinations messageDestinations,
                                           ILogger<RabbitMqSubscribersService> logger,
                                           IExchangeInitializer exchangeInitializer,
-                                          IRabbitSubscriberDomainErrorHandler domainErrorHandler,
                                           IDeadLetterExchangeOptions deadLetterOptions)
         {
             _serviceProvider = serviceProvider;
@@ -45,7 +43,6 @@ namespace Forge.MessageBroker.RabbitMQ
             _messageDestinations = messageDestinations;
             _logger = logger;
             _exchangeInitializer = exchangeInitializer;
-            _domainErrorHandler = domainErrorHandler;
             _deadLetterOptions = deadLetterOptions;
         }
 
@@ -107,14 +104,6 @@ namespace Forge.MessageBroker.RabbitMQ
                 {
                     _logger.LogError(ex, message: ex.Message);
                     currentRetry++;
-
-                    if (ex.IsDomainOrAppException())
-                    {
-                        await _domainErrorHandler.HandleAsync(ex);
-                        channel.BasicAck(args.DeliveryTag, false);
-                        await Task.Yield();
-                        return;
-                    }
 
                     var messageType = message.GetType().Name;
                     var messageCont = message.ToString();
