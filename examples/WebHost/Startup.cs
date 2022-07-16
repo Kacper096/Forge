@@ -1,4 +1,5 @@
 ﻿using Forge.Api;
+using Forge.Logging;
 using Forge.MediatR.CQRS;
 using Forge.MessageBroker.RabbitMQ;
 using Forge.Persistence.InfluxDb;
@@ -29,6 +30,7 @@ public static class Startup
         services.AddControllers();
         services.AddEndpointsApiExplorer();
         services.AddSwaggerGen();
+        services.AddRabbitMQ(configuration);
         return services;
     }
 
@@ -43,7 +45,7 @@ public static class Startup
         builder.UseRabbitMq(MessageBrokerBootstrapper.ConfigureSubscribeMessages, MessageBrokerBootstrapper.ConfigurePublishMessages);
         builder.UseErrorHandler();
         builder.UseRequestLocalization();
-        //app.UseLoggingMiddleware();
+        builder.UseLogging();
         builder.UseAuthorization();
 
         builder.UseEndpoints(endpoints => EndpointRouteBuilderBootstrapper.Bootstrap(endpoints));
