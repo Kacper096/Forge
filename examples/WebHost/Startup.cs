@@ -15,6 +15,7 @@ public static class Startup
         var builder = WebApplication.CreateBuilder(args);
         var configuration = builder.Configuration;
         builder.WebHost.ConfigureServices(services => services.RegisterServices(configuration));
+        builder.WebHost.AddLogging();
         var app = builder.Build();
         app.UseServices(app.Environment);
         return app;
