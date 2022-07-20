@@ -2,6 +2,7 @@
 using Forge.Logging;
 using Forge.MediatR.CQRS;
 using Forge.MessageBroker.RabbitMQ;
+using Forge.MessageBroker.RabbitMQ.Exchange;
 using Forge.Persistence.InfluxDb;
 using Forge.Persistence.Redis;
 using Forge.WebHost.Bootstrap;
@@ -31,7 +32,10 @@ public static class Startup
         services.AddControllers();
         services.AddEndpointsApiExplorer();
         services.AddSwaggerGen();
-       //services.AddRabbitMQ(configuration);
+        services.AddRabbitMQ(configuration, new ExchangeOptionsInitializer
+        {
+            Name = "test-exchange"
+        });
         return services;
     }
 
@@ -45,7 +49,7 @@ public static class Startup
         builder.UseCors();
         builder.UseRouting();
         builder.UseErrorHandler();
-      //  builder.UseRabbitMq(MessageBrokerBootstrapper.ConfigureSubscribeMessages, MessageBrokerBootstrapper.ConfigurePublishMessages);
+        builder.UseRabbitMq(MessageBrokerBootstrapper.ConfigureSubscribeMessages, MessageBrokerBootstrapper.ConfigurePublishMessages);
         builder.UseRequestLocalization();
         builder.UseLogging();
         builder.UseAuthorization();

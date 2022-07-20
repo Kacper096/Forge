@@ -6,4 +6,9 @@
     <Nullable>enable</Nullable>
   </PropertyGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\Forge.MessageBroker.RabbitMQ\Forge.MessageBroker.RabbitMQ.csproj" />
+    <ProjectReference Include="..\Application\Forge.Application.csproj" />
+  </ItemGroup>
+
 </Project>

@@ -8,6 +8,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\src\Forge.MediatR.CQRS\Forge.MediatR.CQRS.csproj" />
+    <ProjectReference Include="..\..\src\Forge.MessageBroker.RabbitMQ\Forge.MessageBroker.RabbitMQ.csproj" />
     <ProjectReference Include="..\..\src\Forge.Persistence.InfluxDb\Forge.Persistence.InfluxDb.csproj" />
     <ProjectReference Include="..\..\src\Forge.Persistence.Redis\Forge.Persistence.Redis.csproj" />
   </ItemGroup>
