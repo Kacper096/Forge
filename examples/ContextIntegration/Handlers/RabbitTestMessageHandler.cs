@@ -6,7 +6,7 @@ namespace Forge.ContextIntegration.Handlers;
 
 internal class RabbitTestMessageHandler : BaseExternalMessageHandler<RabbitTestMessage>
 {
-    public RabbitTestMessageHandler(ILogger<BaseExternalMessageHandler<RabbitTestMessage>> logger) 
+    public RabbitTestMessageHandler(ILogger<RabbitTestMessageHandler> logger) 
         : base(logger)
     {
     }
