@@ -9,7 +9,7 @@ internal abstract class BaseExternalMessageHandler<TMessage> : IHandle<TMessage>
 {
     protected ILogger<BaseExternalMessageHandler<TMessage>> Logger { get; }
 
-    protected BaseExternalMessageHandler(ILogger<BaseExternalMessageHandler<TMessage>> logger)
+    public BaseExternalMessageHandler(ILogger<BaseExternalMessageHandler<TMessage>> logger)
     {
         Logger = logger;
     }
