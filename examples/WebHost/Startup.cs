@@ -24,6 +24,7 @@ public static class Startup
 
     private static IServiceCollection RegisterServices(this IServiceCollection services, IConfiguration configuration)
     {
+        services.AddForge(configuration);
         services.AddCQRS(Assemblies.Application);
         services.AddErrorHandler();
         services.AddInfluxDb(configuration);
@@ -32,10 +33,7 @@ public static class Startup
         services.AddControllers();
         services.AddEndpointsApiExplorer();
         services.AddSwaggerGen();
-        services.AddRabbitMQ(configuration, new ExchangeOptionsInitializer
-        {
-            Name = "test-exchange"
-        }, Assemblies.ContextIntegration);
+        services.AddRabbitMQ(configuration, assemblies: Assemblies.ContextIntegration);
         return services;
     }
 

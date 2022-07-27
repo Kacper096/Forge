@@ -10,6 +10,7 @@ using Forge.Utils;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Options;
 using System.Reflection;
 
 namespace Forge.MessageBroker.RabbitMQ
@@ -24,7 +25,8 @@ namespace Forge.MessageBroker.RabbitMQ
                                                      IExchangeOptionsInitializer exchangeOptions = null,
                                                      params Assembly[] assemblies)
         {
-            exchangeOptions = ExchangeOptionsInitializerFactory.CreateInstance(exchangeOptions);
+            var appName = services.BuildServiceProvider().GetService<IOptions<ApplicationOptions>>()?.Value?.Name;
+            exchangeOptions = ExchangeOptionsInitializerFactory.CreateInstance(exchangeOptions, appName);
             var rabbitOptions = configuration.GetOptions<RabbitMQOptions>(RabbitMQOptions.DefaultSectionName);
             services.AddSingleton<IRabbitMQOptions>(rabbitOptions);
             services.AddSingleton<IDeadLetterExchangeOptions, DeadLetterExchangeOptions>()
