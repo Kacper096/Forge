@@ -21,8 +21,4 @@
     <ProjectReference Include="..\Application\Forge.Application.csproj" />
   </ItemGroup>
 
-  <ItemGroup>
-    <Folder Include="Extensions\" />
-  </ItemGroup>
-
 </Project>
