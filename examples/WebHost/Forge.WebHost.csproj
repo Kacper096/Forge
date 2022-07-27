@@ -19,6 +19,7 @@
     <ProjectReference Include="..\..\src\Forge.Persistence.Redis\Forge.Persistence.Redis.csproj" />
     <ProjectReference Include="..\..\src\Forge\Forge.csproj" />
     <ProjectReference Include="..\Application\Forge.Application.csproj" />
+    <ProjectReference Include="..\ContextIntegration\Forge.ContextIntegration.csproj" />
   </ItemGroup>
 
 </Project>

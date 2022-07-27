@@ -12,5 +12,6 @@ public static class EndpointRouteBuilderBootstrapper
                  .Post<AddTemperatureToCacheCommand>("/temperature-cache");
 
         endpoints.Get<GetTemperatureFromCacheQuery, Temperature>("/temperature-cache");
+        endpoints.Post<TestRabbitCommand>("/rabbit");
     }
 }

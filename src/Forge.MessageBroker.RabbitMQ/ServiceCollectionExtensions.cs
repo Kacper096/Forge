@@ -21,7 +21,8 @@ namespace Forge.MessageBroker.RabbitMQ
 
         public static IServiceCollection AddRabbitMQ(this IServiceCollection services,
                                                      IConfiguration configuration,
-                                                     IExchangeOptionsInitializer exchangeOptions = null)
+                                                     IExchangeOptionsInitializer exchangeOptions = null,
+                                                     params Assembly[] assemblies)
         {
             exchangeOptions = ExchangeOptionsInitializerFactory.CreateInstance(exchangeOptions);
             var rabbitOptions = configuration.GetOptions<RabbitMQOptions>(RabbitMQOptions.DefaultSectionName);
@@ -44,7 +45,7 @@ namespace Forge.MessageBroker.RabbitMQ
 
             services.AddHostedService<RabbitMqSubscribersService>();
 
-            RegisterHandlers(services);
+            RegisterHandlers(services, assemblies);
             return services;
         }
 
@@ -67,10 +68,10 @@ namespace Forge.MessageBroker.RabbitMQ
             return builder;
         }
 
-        private static void RegisterHandlers(IServiceCollection services)
+        private static void RegisterHandlers(IServiceCollection services, Assembly[] assemblies)
         {
             var handleInterface = typeof(IHandle<>);
-            var genericTypes = AssemblyUtil.FindGenericDerivedTypesFromCurrentDomain(handleInterface).ToList();
+            var genericTypes = AssemblyUtil.FindGenericDerivedTypes(assemblies, handleInterface).ToList();
             genericTypes.ForEach(type =>
             {
                 var baseType = type.GetInterfaces().First(i => i.GetGenericTypeDefinition() == handleInterface);

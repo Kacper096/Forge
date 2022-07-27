@@ -35,7 +35,7 @@ public static class Startup
         services.AddRabbitMQ(configuration, new ExchangeOptionsInitializer
         {
             Name = "test-exchange"
-        });
+        }, Assemblies.ContextIntegration);
         return services;
     }
 
