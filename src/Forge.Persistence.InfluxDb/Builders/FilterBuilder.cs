@@ -19,19 +19,22 @@ namespace Forge.Persistence.InfluxDb.Builders
 
         private const string FilterContentTemplate = "fn: (r) => ";
 
-        private readonly List<Func<string>> _parameters = new();
+        private readonly List<Func<string?>> _parameters = new();
 
-        internal Func<string> FilterContent;
+        internal Func<string?> FilterContent;
 
         public FilterBuilder()
         {
             _parameters.Add(() => FilterContentTemplate);
             FilterContent = () =>
             {
-                string content = null;
+                string? content = null;
                 _parameters.ForEach(p =>
                 {
                     var partOfContent = p.Invoke();
+                    if (partOfContent is null)
+                        return;
+
                     var cutPartOfContent = partOfContent.Replace(AndOperator, null).Replace(OrOperator, null).Trim();
                     if (content?.Contains(cutPartOfContent) ?? false)
                     {
@@ -76,7 +79,7 @@ namespace Forge.Persistence.InfluxDb.Builders
 
         public IFilter And<TMeasure>(Expression<Func<TMeasure, bool>> expression)
         {
-            _parameters.Add(GetContentFromMeasure<TMeasure>(AndOperator, expression));
+            _parameters.Add(GetContentFromMeasure(AndOperator, expression));
             return this;
         }
 
@@ -98,17 +101,17 @@ namespace Forge.Persistence.InfluxDb.Builders
             _parameters.Add(GetContentFromFilterParameter(null, fp => fp.Measurement == measurementName));
         }
 
-        private Func<string> GetContentFromFilterParameter(string @operator, Expression<Func<FilterParameter, bool>> expression)
+        private static Func<string> GetContentFromFilterParameter(string? @operator, Expression<Func<FilterParameter, bool>> expression)
             => () =>
             {
-                (string ParameterName, string Operator, string ParameterValue) = GetParamsFromExpression(expression);
+                (string? ParameterName, string? Operator, string? ParameterValue) = GetParamsFromExpression(expression);
                 return BuildContent(@operator, ParameterName, Operator, ParameterValue);
             };
 
-        private Func<string> GetContentFromMeasure<TMeasure>(string @operator, Expression<Func<TMeasure, bool>> expression)
+        private static Func<string?> GetContentFromMeasure<TMeasure>(string @operator, Expression<Func<TMeasure, bool>> expression)
             => () =>
             {
-                (string PropertyName, string Operator, string Parameter) = GetParamsFromExpression(expression);
+                (string? PropertyName, string? Operator, string? Parameter) = GetParamsFromExpression(expression);
 
                 if (string.IsNullOrEmpty(PropertyName))
                 {
@@ -118,7 +121,7 @@ namespace Forge.Persistence.InfluxDb.Builders
                 var measureType = typeof(TMeasure);
                 var propertyName = string.Concat(PropertyName[0].ToString().ToUpper(), PropertyName[1..]);
                 var columnAttribute = measureType.GetProperty(propertyName)?.GetCustomAttribute<Column>(inherit: true);
-                return BuildContent(@operator, PropertyName, Operator, Parameter, isTagParameterName: columnAttribute.IsTag);
+                return BuildContent(@operator, PropertyName, Operator, Parameter, isTagParameterName: columnAttribute?.IsTag ?? false);
             };
 
         private static string GetOperator(ExpressionType expressionType) => expressionType switch
@@ -132,7 +135,7 @@ namespace Forge.Persistence.InfluxDb.Builders
             _ => string.Empty
         };
 
-        private string BuildContent(string chainOperator, string parameterName, string conditionOperator, string parameterValue, bool isTagParameterName = false)
+        private static string BuildContent(string? chainOperator, string? parameterName, string? conditionOperator, string? parameterValue, bool isTagParameterName = false)
         {
             chainOperator = string.IsNullOrEmpty(chainOperator) ? "" : $" {chainOperator} ";
             if (!isTagParameterName)
@@ -145,7 +148,7 @@ namespace Forge.Persistence.InfluxDb.Builders
             return buildedContent;
         }
 
-        private (string PropertyName, string Operator, string ParameterValue) GetParamsFromExpression<TMeasure>(Expression<Func<TMeasure, bool>> expression)
+        private static (string? PropertyName, string? Operator, string? ParameterValue) GetParamsFromExpression<TMeasure>(Expression<Func<TMeasure, bool>> expression)
         {
             if (expression.Body is BinaryExpression binaryExpression)
             {

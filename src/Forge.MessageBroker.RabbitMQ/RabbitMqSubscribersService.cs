@@ -64,7 +64,9 @@ namespace Forge.MessageBroker.RabbitMQ
             var queueArgs = GetQueueArguments(messageDestination);
             channel.QueueDeclare(messageDestination.Queue, autoDelete: false, exclusive: false, arguments: queueArgs);
             channel.QueueBind(messageDestination.Queue, messageDestination.Exchange, messageDestination.RoutingKey);
-            _logger.LogInformation($"Queue [{messageDestination.Queue}] has been declared for an exchange [{messageDestination.Exchange}]");
+            _logger.LogInformation("Queue [{Queue}] has been declared for an exchange [{Exchange}]",
+                messageDestination.Queue,
+                messageDestination.Exchange);
             DeclareDeadLetterQueue(channel, messageDestination, queueArgs);
 
             var genericHandlerType = typeof(IHandle<>);
@@ -77,7 +79,7 @@ namespace Forge.MessageBroker.RabbitMQ
                 {
                     var handler = _serviceProvider.GetService(handlerType);
                     var handleMethod = RabbitHandlerUtil.BuildHandleMethod(handler);
-                    var message = _serializer.Deserialize(args.Body.Span, messageType) as IMessage;
+                    var message = (_serializer.Deserialize(args.Body.Span, messageType) as IMessage)!;
                     
                     await TryHandleAsync(channel, handleMethod, message, args);
                 }
@@ -107,9 +109,9 @@ namespace Forge.MessageBroker.RabbitMQ
 
                     var messageType = message.GetType().Name;
                     var messageCont = message.ToString();
-                    var errorMessage = _deadLetterOptions.Enabled ? $"Message [{messageType}]: {messageCont} will be moved to dead letter" : $"Unhandled message [{messageType}]: {messageCont}";
+                    var errorMessage = _deadLetterOptions.Enabled ? "Message [{messageType}]: {messageCont} will be moved to dead letter" : "Unhandled message [{messageType}]: {messageCont}";
 
-                    _logger.LogError(errorMessage);
+                    _logger.LogError(errorMessage, messageType, messageCont);
                     channel.BasicNack(args.DeliveryTag, false, false);
                     await Task.Yield();
                 });
@@ -118,7 +120,7 @@ namespace Forge.MessageBroker.RabbitMQ
             });
         }
 
-        private IDictionary<string, object>? GetQueueArguments(IMessageDestination messageDestination)
+        private IDictionary<string, object> GetQueueArguments(IMessageDestination messageDestination)
         {
             return !_deadLetterOptions.Enabled
                 ? new Dictionary<string, object>()
@@ -146,7 +148,9 @@ namespace Forge.MessageBroker.RabbitMQ
 
             channel.QueueDeclare(queueName, autoDelete: false, exclusive: false, arguments: deadLetterArgs);
             channel.QueueBind(queueName, exchangeName, queueName);
-            _logger.LogInformation($"Deadletter queue [{queueName}] has been declared for an exchange [{exchangeName}]");
+            _logger.LogInformation("Deadletter queue [{queueName}] has been declared for an exchange [{exchangeName}]", 
+                queueName,
+                exchangeName);
         }
     }
 }

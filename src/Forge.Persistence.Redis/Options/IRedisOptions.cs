@@ -2,6 +2,6 @@
 {
     public interface IRedisOptions
     {
-        string ConnectionString { get; set; }
+        string? ConnectionString { get; set; }
     }
 }

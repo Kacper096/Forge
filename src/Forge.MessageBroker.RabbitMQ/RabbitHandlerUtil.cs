@@ -15,7 +15,7 @@ namespace Forge.MessageBroker.RabbitMQ
                 }
                 catch (TargetInvocationException ex)
                 {
-                    handleError?.Invoke(obj: ex.InnerException);
+                    handleError?.Invoke(obj: ex.InnerException!);
                 }
             }; 
         }

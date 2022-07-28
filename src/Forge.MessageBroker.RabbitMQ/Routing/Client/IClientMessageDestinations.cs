@@ -7,8 +7,8 @@ namespace Forge.MessageBroker.RabbitMQ.Routing.Client
 
         void Add(Type messageType, IMessageDestination destinations);
         void Add<TMessage>(IMessageDestination destinations) where TMessage : IMessage;
-        IMessageDestination Get(Type messageType);
-        IMessageDestination Get<TMessage>() where TMessage : IMessage;
+        IMessageDestination? Get(Type messageType);
+        IMessageDestination? Get<TMessage>() where TMessage : IMessage;
         IList<IMessageDestination> GetAll();
     }
 }
