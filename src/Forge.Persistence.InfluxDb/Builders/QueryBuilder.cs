@@ -22,11 +22,11 @@ namespace Forge.Persistence.InfluxDb.Builders
         private const string FilterTemplate = " |> filter(" + FilterConditionParameter + ")";
         private const string PivotTemplate = " |> pivot(rowKey: [\"" + PivotRowKeyParameter + "\"], columnKey: [\"" + PivotColumnKeyParameter + "\"], valueColumn: \"" + PivotRowKeyParameter + "\")";
 
-        private string _query;
+        private string _query = string.Empty;
         private readonly string _bucketName;
         private readonly FilterBuilder _filterBuilder;
         private readonly List<Func<FilterBuilder, string>> _steps;
-        private Func<FilterBuilder, string> _latestStep;
+        private Func<FilterBuilder, string>? _latestStep;
         public QueryBuilder(string bucketName)
         {
             _bucketName = bucketName;
@@ -97,7 +97,7 @@ namespace Forge.Persistence.InfluxDb.Builders
             return this;
         }
 
-        public QueryBuilder Select(string name = null)
+        public QueryBuilder Select(string? name = null)
         {
             if (string.IsNullOrWhiteSpace(name))
             {

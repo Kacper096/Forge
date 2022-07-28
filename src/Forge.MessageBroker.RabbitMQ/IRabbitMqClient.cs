@@ -1,7 +1,6 @@
-﻿namespace Forge.MessageBroker.RabbitMQ
+﻿namespace Forge.MessageBroker.RabbitMQ;
+
+public interface IRabbitMqClient
 {
-    public interface IRabbitMqClient
-    {
-        void Send(IMessage message);
-    }
+    void Send(IMessage message);
 }

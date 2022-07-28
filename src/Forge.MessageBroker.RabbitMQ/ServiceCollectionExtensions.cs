@@ -10,85 +10,74 @@ using Forge.Utils;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Options;
 using System.Reflection;
 
-namespace Forge.MessageBroker.RabbitMQ
+namespace Forge.MessageBroker.RabbitMQ;
+
+public static class ServiceCollectionExtensions
 {
-    public static class ServiceCollectionExtensions
+    private const string SuffixPublishConnection = "publish";
+    private const string SuffixSubscribeConnection = "subscribe";
+
+    public static IServiceCollection AddRabbitMQ(this IServiceCollection services,
+                                                 IConfiguration configuration,
+                                                 IExchangeOptionsInitializer? exchangeOptions = null,
+                                                 params Assembly[] assemblies)
     {
-        private const string SuffixPublishConnection = "publish";
-        private const string SuffixSubscribeConnection = "subscribe";
+        var appName = services.BuildServiceProvider().GetService<IOptions<ApplicationOptions>>()?.Value?.Name;
+        exchangeOptions = ExchangeOptionsInitializerFactory.CreateInstance(exchangeOptions, appName);
+        var rabbitOptions = configuration.GetOptions<RabbitMQOptions>(RabbitMQOptions.DefaultSectionName);
+        services.AddSingleton<IRabbitMQOptions>(rabbitOptions);
+        services.AddSingleton<IDeadLetterExchangeOptions, DeadLetterExchangeOptions>()
+                .AddSingleton<IExchangeOptionsInitializer>(exchangeOptions);
+        services.AddSingleton<IExchangeInitializer, ExchangeInitializer>()
+                .AddSingleton<IArrangementBuilder, ArrangementBuilder>()
+                .AddSingleton<IClientMessageDestinations, ClientMessageDestinations>()
+                .AddSingleton<ISubscriberMessageDestinations, SubscriberMessageDestinations>()
+                .AddSingleton<IRabbitMessageSerializer, JsonRabbitMessageSerializer>()
+                .AddSingleton<IRabbitMqClient, RabbitMqClient>();
 
-        public static IServiceCollection AddRabbitMQ(this IServiceCollection services,
-                                                     IConfiguration configuration,
-                                                     IExchangeOptionsInitializer exchangeOptions = null)
+        var connectionFactory = new RabbitMqConnectionFactory(rabbitOptions);
+        var publishConnection = connectionFactory.Generate(SuffixPublishConnection);
+        var subscribeConnection = connectionFactory.Generate(SuffixSubscribeConnection);
+
+        services.AddSingleton<IPublishConnection>(new PublishConnection(publishConnection))
+                .AddSingleton<ISubscribeConnection>(new SubscribeConnection(subscribeConnection));
+
+        services.AddHostedService<RabbitMqSubscribersService>();
+
+        RegisterHandlers(services, assemblies);
+        return services;
+    }
+
+    public static IApplicationBuilder UseRabbitMq(this IApplicationBuilder builder,
+                                                  Action<IConsumerMessageDestinationProvider>? subscriberMessageDestinations = null,
+                                                  Action<IPublisherMessageDestinationProvider>? clientMessageDestinations = null)
+    {
+        var serviceProvider = builder.ApplicationServices;
+        var subscriberMessageDestinationsService = serviceProvider.GetRequiredService<ISubscriberMessageDestinations>();
+        var clientMessageDestinationsService = serviceProvider.GetRequiredService<IClientMessageDestinations>();
+
+        var arrangementBuilder = serviceProvider.GetRequiredService<IArrangementBuilder>();
+        var messageDestinationProvider = new MessageDestinationProvider(arrangementBuilder);
+
+        subscriberMessageDestinations?.Invoke(messageDestinationProvider);
+        clientMessageDestinations?.Invoke(messageDestinationProvider);
+        messageDestinationProvider.ApplyDestinations(subscriberMessageDestinationsService, clientMessageDestinationsService);
+
+        messageDestinationProvider.Dispose();
+        return builder;
+    }
+
+    private static void RegisterHandlers(IServiceCollection services, Assembly[] assemblies)
+    {
+        var handleInterface = typeof(IHandle<>);
+        var genericTypes = AssemblyUtil.FindGenericDerivedTypes(assemblies, handleInterface).ToList();
+        genericTypes.ForEach(type =>
         {
-            exchangeOptions = ExchangeOptionsInitializerFactory.CreateInstance(exchangeOptions);
-            var rabbitOptions = configuration.GetOptions<RabbitMQOptions>(RabbitMQOptions.DefaultSectionName);
-            services.AddSingleton<IRabbitMQOptions>(rabbitOptions);
-            services.AddSingleton<IDeadLetterExchangeOptions, DeadLetterExchangeOptions>()
-                    .AddSingleton<IExchangeOptionsInitializer>(exchangeOptions);
-            services.AddSingleton<IExchangeInitializer, ExchangeInitializer>()
-                    .AddSingleton<IArrangementBuilder, ArrangementBuilder>()
-                    .AddSingleton<IClientMessageDestinations, ClientMessageDestinations>()
-                    .AddSingleton<ISubscriberMessageDestinations, SubscriberMessageDestinations>()
-                    .AddSingleton<IRabbitMessageSerializer, JsonRabbitMessageSerializer>()
-                    .AddSingleton<IRabbitMqClient, RabbitMqClient>();
-
-            var connectionFactory = new RabbitMqConnectionFactory(rabbitOptions);
-            var publishConnection = connectionFactory.Generate(SuffixPublishConnection);
-            var subscribeConnection = connectionFactory.Generate(SuffixSubscribeConnection);
-
-            services.AddSingleton<IPublishConnection>(new PublishConnection(publishConnection))
-                    .AddSingleton<ISubscribeConnection>(new SubscribeConnection(subscribeConnection));
-
-            services.AddHostedService<RabbitMqSubscribersService>();
-
-            RegisterHandlers(services);
-            RegisterDomainErrorHandler(services);
-            return services;
-        }
-
-        public static IApplicationBuilder UseRabbitMq(this IApplicationBuilder builder,
-                                                      Action<IConsumerMessageDestinationProvider> subscriberMessageDestinations = null,
-                                                      Action<IPublisherMessageDestinationProvider> clientMessageDestinations = null)
-        {
-            var serviceProvider = builder.ApplicationServices;
-            var subscriberMessageDestinationsService = serviceProvider.GetRequiredService<ISubscriberMessageDestinations>();
-            var clientMessageDestinationsService = serviceProvider.GetRequiredService<IClientMessageDestinations>();
-
-            var arrangementBuilder = serviceProvider.GetRequiredService<IArrangementBuilder>();
-            var messageDestinationProvider = new MessageDestinationProvider(arrangementBuilder);
-
-            subscriberMessageDestinations?.Invoke(messageDestinationProvider);
-            clientMessageDestinations?.Invoke(messageDestinationProvider);
-            messageDestinationProvider.ApplyDestinations(subscriberMessageDestinationsService, clientMessageDestinationsService);
-
-            messageDestinationProvider.Dispose();
-            return builder;
-        }
-
-        private static void RegisterHandlers(IServiceCollection services)
-        {
-            var handleInterface = typeof(IHandle<>);
-            var genericTypes = AssemblyUtil.FindGenericDerivedTypesFromCurrentDomain(handleInterface).ToList();
-            genericTypes.ForEach(type =>
-            {
-                var baseType = type.GetInterfaces().First(i => i.GetGenericTypeDefinition() == handleInterface);
-                services.AddSingleton(baseType, type);
-            });
-        }
-
-        private static void RegisterDomainErrorHandler(IServiceCollection services)
-        {
-            var interfaceType = typeof(IRabbitSubscriberDomainErrorHandler);
-            var derivedType = AssemblyUtil.FindNonGenericDerivedTypeFromCurrentDomain(interfaceType);
-            if (derivedType == null)
-            {
-                return;
-            }
-
-            services.AddSingleton(interfaceType, derivedType);
-        }
+            var baseType = type.GetInterfaces().First(i => i.GetGenericTypeDefinition() == handleInterface);
+            services.AddSingleton(baseType, type);
+        });
     }
 }

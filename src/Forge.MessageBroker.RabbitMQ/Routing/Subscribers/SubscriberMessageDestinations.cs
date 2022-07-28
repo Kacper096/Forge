@@ -17,7 +17,11 @@
         public IMessageDestination? this[Type messageType]
         {
             get => _destinations[messageType];
-            set => _destinations[messageType] = value;
+            set {
+                if (value is null)
+                    return;
+                _destinations[messageType] = value;
+            }
         }
 
         public IMessageDestination? Get<TMessage>()

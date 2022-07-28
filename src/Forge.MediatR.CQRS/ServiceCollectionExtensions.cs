@@ -6,12 +6,11 @@ namespace Forge.MediatR.CQRS
 {
     public static class ServiceCollectionExtensions
     {
-        public static IServiceCollection UseCQRS(this IServiceCollection services, params Assembly[] assemblies)
+        public static IServiceCollection AddCQRS(this IServiceCollection services, params Assembly[] assemblies)
         {
             var requestTypes = GetTypes(assemblies, typeof(IRequest<>));
             var requestHandlerTypes = GetTypes(assemblies, typeof(IRequestHandler<,>));
 
-            RegisterGenericTypes(services, typeof(IRequest<>), requestTypes);
             RegisterGenericTypes(services, typeof(IRequestHandler<,>), requestHandlerTypes);
             services.AddScoped<IMediator, Mediator>();
             services.AddScoped<ServiceFactory>(p => p.GetService);

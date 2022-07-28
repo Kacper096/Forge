@@ -1,7 +1,6 @@
-﻿namespace Forge.MessageBroker.RabbitMQ.Routing
+﻿namespace Forge.MessageBroker.RabbitMQ.Routing;
+
+public interface IConsumerMessageDestinationProvider
 {
-    public interface IConsumerMessageDestinationProvider
-    {
-        IConsumerMessageDestinationProvider Add<TMessage>(string routingKey = null, string exchange = null, string queue = null) where TMessage : IMessage;
-    }
+    IConsumerMessageDestinationProvider Add<TMessage>(string? routingKey = null, string? exchange = null, string? queue = null) where TMessage : IMessage;
 }

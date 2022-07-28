@@ -61,7 +61,7 @@ namespace Forge.Persistence.InfluxDb.Services
                     var health = await healthService.GetHealthAsync();
                     isHealthy = health.Status == HealthCheck.StatusEnum.Pass;
                 }
-                catch (Exception ex)
+                catch (Exception)
                 {
                     _logger.LogError("Influx database is not responding");
                 }
