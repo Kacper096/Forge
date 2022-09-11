@@ -375,3 +375,4 @@ nuget.config
 
 build-artifacts/*
 packages/*
+cake/tools/*
