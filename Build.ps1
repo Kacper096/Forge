@@ -1,21 +1,15 @@
-$Version = "1.0.1"
-$ArtifactsFolder = "build-artifacts"
+$ErrorActionPreference = 'Stop'
 
-Write-Host "--> Building..." -ForegroundColor Yellow
-if (Test-Path -Path $ArtifactsFolder)
-{
-    Get-ChildItem -Path $ArtifactsFolder -Include *.* -File -Recurse | foreach {$_.Delete()}    
-}
-else {
-    New-Item -Path . -Name $ArtifactsFolder -ItemType "directory"
-}
-dotnet restore
-dotnet build ".\src\Forge" -c Release -o "$($ArtifactsFolder)\Forge"
-dotnet build ".\src\Forge.Logging" -c Release -o "$($ArtifactsFolder)\Forge.Logging"
-dotnet build ".\src\Forge.MediatR.CQRS" -c Release -o "$($ArtifactsFolder)\Forge.MediatR.CQRS"
-dotnet build ".\src\Forge.MessageBroker.RabbitMQ" -c Release -o "$($ArtifactsFolder)\Forge.MessageBroker.RabbitMQ"
-dotnet build ".\src\Forge.Persistence.InfluxDb" -c Release -o "$($ArtifactsFolder)\Forge.Persistence.InfluxDb"
-dotnet build ".\src\Forge.Persistence.Redis" -c Release -o "$($ArtifactsFolder)\Forge.Persistence.Redis"
-dotnet build ".\src\Forge.Api" -c Release -o "$($ArtifactsFolder)\Forge.Api"
+Set-Location -LiteralPath $PSScriptRoot
 
-Write-Host "--> Building [COMPLETED] !" -ForegroundColor Green
+$env:DOTNET_SKIP_FIRST_TIME_EXPERIENCE = '1'
+$env:DOTNET_CLI_TELEMETRY_OPTOUT = '1'
+$env:DOTNET_NOLOGO = '1'
+
+dotnet tool install Cake.Tool --version 2.2.0
+
+dotnet tool restore
+if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+
+dotnet cake ./cake/build.cake @args --project=Forge
+if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
