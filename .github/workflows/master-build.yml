@@ -24,7 +24,5 @@ jobs:
           dotnet-version: ${{ matrix.dotnet-version }}
           include-prerelease: true
       - name: Run the build script
-        uses: cake-build/cake-action@v1
-        with:
-          cake-version: tool-manifest
-          target: Build
+        shell: pwsh
+        run: .\Build.ps1
