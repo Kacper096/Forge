@@ -7,7 +7,6 @@
 var target = Argument("target", "Default");
 var configuration = Argument("configuration", "Release");
 var buildArtifacts = Directory("..\\build-artifacts");
-var packages = Directory("..\\packages");
 var solutionFile = File("..\\Forge.sln");
 var directories = GetDirectories("..\\src\\*");
 
