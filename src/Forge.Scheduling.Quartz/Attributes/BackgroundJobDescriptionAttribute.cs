@@ -14,6 +14,6 @@ public sealed class BackgroundJobDescriptionAttribute : Attribute
     }
 
     public string Name { get; }
-    public string? Group { get; }
-    public string? Description { get; }
+    public string? Group { get; set; }
+    public string? Description { get; set; }
 }
