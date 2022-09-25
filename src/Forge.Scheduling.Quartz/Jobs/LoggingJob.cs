@@ -9,7 +9,7 @@ internal sealed class LoggingJob<TJob> : IBackgroundJob
     private readonly IJob _job;
     private readonly ILogger<LoggingJob<TJob>> _logger;
 
-    internal LoggingJob(IJob job, ILogger<LoggingJob<TJob>> logger)
+    public LoggingJob(TJob job, ILogger<LoggingJob<TJob>> logger)
     {
         _job = job;
         _logger = logger;

@@ -1,10 +1,12 @@
 ﻿using Forge.Api;
+using Forge.Infrastructure.Jobs;
 using Forge.Logging;
 using Forge.MediatR.CQRS;
 using Forge.MessageBroker.RabbitMQ;
 using Forge.MessageBroker.RabbitMQ.Exchange;
 using Forge.Persistence.InfluxDb;
 using Forge.Persistence.Redis;
+using Forge.Scheduling.Quartz;
 using Forge.WebHost.Bootstrap;
 
 namespace Forge.WebHost;
@@ -34,6 +36,7 @@ public static class Startup
         services.AddEndpointsApiExplorer();
         services.AddSwaggerGen();
         services.AddRabbitMQ(configuration, assemblies: Assemblies.ContextIntegration);
+        BackgroundJobBootstrapper.Bootstrap(services, configuration);
         return services;
     }
 

@@ -20,6 +20,7 @@
     <ProjectReference Include="..\..\src\Forge\Forge.csproj" />
     <ProjectReference Include="..\Application\Forge.Application.csproj" />
     <ProjectReference Include="..\ContextIntegration\Forge.ContextIntegration.csproj" />
+    <ProjectReference Include="..\Forge.Infrastructure\Forge.Infrastructure.csproj" />
   </ItemGroup>
 
 </Project>

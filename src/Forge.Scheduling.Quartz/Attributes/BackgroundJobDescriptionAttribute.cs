@@ -5,8 +5,8 @@ public sealed class BackgroundJobDescriptionAttribute : Attribute
 {
     public BackgroundJobDescriptionAttribute(
         string name,
-        string? group,
-        string? description)
+        string? group = null,
+        string? description = null)
     {
         Name = name;
         Group = group;
