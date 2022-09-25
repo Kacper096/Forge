@@ -1,4 +1,6 @@
-﻿namespace Forge.Scheduling.Quartz.Attributes;
+﻿using System;
+
+namespace Forge.Scheduling.Quartz.Attributes;
 
 [AttributeUsage(AttributeTargets.Class, Inherited = false, AllowMultiple = false)]
 public sealed class BackgroundJobDescriptionAttribute : Attribute

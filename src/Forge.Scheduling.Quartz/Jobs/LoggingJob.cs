@@ -1,5 +1,7 @@
 ﻿using Microsoft.Extensions.Logging;
 using Quartz;
+using System;
+using System.Threading.Tasks;
 
 namespace Forge.Scheduling.Quartz.Jobs;
 

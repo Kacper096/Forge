@@ -1,5 +1,6 @@
 ﻿using Forge.Scheduling.Quartz.Attributes;
 using Quartz;
+using System;
 using System.Reflection;
 
 namespace Forge.Scheduling.Quartz;

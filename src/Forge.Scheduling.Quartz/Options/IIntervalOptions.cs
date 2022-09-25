@@ -1,4 +1,6 @@
-﻿namespace Forge.Scheduling.Quartz.Options;
+﻿using System;
+
+namespace Forge.Scheduling.Quartz.Options;
 
 public interface IIntervalOptions
 {
