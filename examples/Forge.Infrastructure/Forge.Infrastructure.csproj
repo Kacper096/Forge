@@ -1,0 +1,5 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\Forge.Scheduling.Quartz\Forge.Scheduling.Quartz.csproj" />
+  </ItemGroup>
+</Project>
