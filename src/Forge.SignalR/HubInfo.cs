@@ -6,6 +6,7 @@ namespace Forge.SignalR;
 
 public record HubInfo
 {
+    private const string HubPathPrefix = "hubs";
     private const string DefaultGroupName = "GlobalGroup";
     private const string DefaultDescription = "Empty";
 
@@ -17,6 +18,7 @@ public record HubInfo
         DisplayName = CreateDisplayName(hubAttribute);
         Group = CreateGroup(hubAttribute);
         Description = CreateDescription(hubAttribute);
+        EndpointName = CreateEndpointName(hubAttribute);
     }
 
     public Type HubType { get; }
@@ -24,12 +26,16 @@ public record HubInfo
     public string DisplayName { get; }
     public string Group { get; }
     public string Description { get; }
+    public string EndpointName { get; }
 
     private string CreateName(HubAttribute? attribute)
         => attribute?.Name ?? HubType.Name;
 
     private string CreateDisplayName(HubAttribute? attribute)
         => attribute?.DisplayName ?? CreateName(attribute);
+
+    private string CreateEndpointName(HubAttribute? attribute)
+        => $"/{HubPathPrefix}/{CreateName(attribute)}";
 
     private static string CreateGroup(HubAttribute? attribute)
         => attribute?.Group ?? DefaultGroupName;
