@@ -4,7 +4,7 @@ namespace Forge.Extensions;
 
 public static class TypeExtensions
 {
-    public static bool Inherit<T>(this Type type)
+    public static bool Inherits<T>(this Type type)
         where T : class =>
         type.Inherits(typeof(T));
 
