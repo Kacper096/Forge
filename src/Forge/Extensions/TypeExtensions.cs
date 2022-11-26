@@ -4,6 +4,13 @@ namespace Forge.Extensions;
 
 public static class TypeExtensions
 {
+    public static bool Inherit<T>(this Type type)
+        where T : class =>
+        type.Inherits(typeof(T));
+
+    public static bool Inherits(this Type type, Type inheritType) =>
+        type.InheritsGeneric(inheritType) || type.InheritsNonGeneric(inheritType);
+
     public static bool InheritsGeneric(this Type type, Type genericTypeDefinition)
     {
         var currentType = type;
