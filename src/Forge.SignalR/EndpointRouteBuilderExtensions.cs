@@ -46,7 +46,7 @@ internal static class EndpointRouteBuilderExtensions
     private static void ValidateHubs(IReadOnlyCollection<HubInfo> hubInfos)
     {
         var uniqueNameExceptions = hubInfos.GroupBy(h => h.Name)
-            .Where(g => g.Count() > 0)
+            .Where(g => g.Count() > 1)
             .Select(g => g.First().Name)
             .Join(hubInfos,
                   duplicatedName => duplicatedName,
