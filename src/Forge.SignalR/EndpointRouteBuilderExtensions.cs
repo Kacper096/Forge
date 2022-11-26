@@ -11,9 +11,8 @@ namespace Forge.SignalR;
 
 internal static class EndpointRouteBuilderExtensions
 {
-    internal static IEndpointRouteBuilder MapHubs<TClientAssemblies>(this IEndpointRouteBuilder endpointRouteBuilder,
+    internal static IEndpointRouteBuilder MapHubs(this IEndpointRouteBuilder endpointRouteBuilder,
         params Assembly[] assemblies)
-        where TClientAssemblies : new()
     {
         var hubInfos = assemblies.SelectMany(a => a.GetTypes())
             .Where(t => t.Inherits<Hub>())
