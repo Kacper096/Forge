@@ -7,6 +7,7 @@ using Forge.MessageBroker.RabbitMQ.Exchange;
 using Forge.Persistence.InfluxDb;
 using Forge.Persistence.Redis;
 using Forge.Scheduling.Quartz;
+using Forge.SignalR;
 using Forge.WebHost.Bootstrap;
 
 namespace Forge.WebHost;
@@ -36,6 +37,7 @@ public static class Startup
         services.AddEndpointsApiExplorer();
         services.AddSwaggerGen();
         services.AddRabbitMQ(configuration, assemblies: Assemblies.ContextIntegration);
+        services.AddStreamingSignalR(configuration);
         BackgroundJobBootstrapper.Bootstrap(services, configuration);
         return services;
     }
@@ -56,6 +58,7 @@ public static class Startup
         builder.UseAuthorization();
 
         builder.UseEndpoints(endpoints => EndpointRouteBuilderBootstrapper.Bootstrap(endpoints));
+        builder.UseSignalR();
         return builder;
     }
 }

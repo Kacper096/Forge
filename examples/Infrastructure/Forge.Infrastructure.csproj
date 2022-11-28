@@ -1,5 +1,6 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <ItemGroup>
     <ProjectReference Include="..\..\src\Forge.Scheduling.Quartz\Forge.Scheduling.Quartz.csproj" />
+    <ProjectReference Include="..\..\src\Forge.SignalR\Forge.SignalR.csproj" />
   </ItemGroup>
 </Project>

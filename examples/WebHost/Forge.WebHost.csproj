@@ -18,6 +18,7 @@
     <ProjectReference Include="..\..\src\Forge.Persistence.InfluxDb\Forge.Persistence.InfluxDb.csproj" />
     <ProjectReference Include="..\..\src\Forge.Persistence.Redis\Forge.Persistence.Redis.csproj" />
     <ProjectReference Include="..\..\src\Forge\Forge.csproj" />
+    <ProjectReference Include="..\..\src\Forge.SignalR\Forge.SignalR.csproj" />
     <ProjectReference Include="..\Application\Forge.Application.csproj" />
     <ProjectReference Include="..\ContextIntegration\Forge.ContextIntegration.csproj" />
     <ProjectReference Include="..\Infrastructure\Forge.Infrastructure.csproj" />
