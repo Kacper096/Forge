@@ -7,9 +7,9 @@ public sealed class HubAttribute : Attribute
 {
     public HubAttribute(
         string name,
-        string? displayName,
-        string? group,
-        string? description)
+        string? displayName = null,
+        string? group = null,
+        string? description = null)
     {
         Name = name;
         DisplayName = displayName;
