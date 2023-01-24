@@ -10,3 +10,4 @@ It's a simple package for quickly creating a web api in .NET 6.0
 * Integration with InfluxDb
 * Integration with Redis
 * Quartz Jobs
+* Streaming and messaging by SingalR
