@@ -9,12 +9,12 @@ using System.Threading;
 
 namespace Forge.Infrastructure.Hubs;
 
-[Hub(nameof(HelloStreamingHub))]
+[Hub(name: nameof(HelloStreamingHub), displayName: "Hello Streaming Hub", group: "Hello Group", description: "This hub sends 'Hello World' in streaming mode.")]
 public class HelloStreamingHub : BaseStreamingHub
 {
     public HelloStreamingHub(
         IOptionsMonitor<StreamingOptions> streamingOptions,
-        ILogger<BaseStreamingHub> logger)
+        ILogger<HelloStreamingHub> logger)
         : base(streamingOptions, logger)
     {
     }
@@ -23,8 +23,8 @@ public class HelloStreamingHub : BaseStreamingHub
     {
         return Stream(GetResponse, cancellationToken);
 
-        HelloStreamingResponse GetResponse() =>
-            new HelloStreamingResponse { Name = "Hello World" };
+        static HelloStreamingResponse GetResponse() =>
+            new(){ Name = "Hello World" };
     }
 }
 
